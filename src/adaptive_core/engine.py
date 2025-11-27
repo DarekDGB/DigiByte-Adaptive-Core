@@ -21,7 +21,7 @@ class AdaptiveEngine:
     """
     Reinforcement-style adaptive core for the DigiByte Quantum Shield.
 
-    Very simple v0.1/v2 logic:
+    v2 logic overview:
 
       - TRUE_POSITIVE:
           * increase weight of the reporting layer
@@ -184,7 +184,7 @@ class AdaptiveEngine:
         window: int = 20,
     ) -> Dict[str, Any]:
         """
-        Detect simple threat patterns in recent history.
+            Detect simple threat patterns in recent history.
         """
         packets = [
             p for p in self.threat_memory.list_packets()
@@ -402,14 +402,6 @@ class AdaptiveEngine:
     ) -> Dict[str, Any]:
         """
         High-level immune system report combining all analysis components.
-
-        Returns a dictionary with:
-            - summary
-            - analysis
-            - patterns
-            - correlations
-            - trends
-            - text: multi-line human-readable report
         """
         summary = self.summarize_threats(min_severity=min_severity)
         analysis = self.analyze_threats(
@@ -428,13 +420,12 @@ class AdaptiveEngine:
             bucket=trend_bucket,
         )
 
-        # Build human-readable text
         lines: List[str] = []
         lines.append("=== DigiByte Quantum Adaptive Core — Immune Report ===")
         lines.append(f"Min severity filter: {min_severity}")
         lines.append("")
 
-        # Summary section
+        # Summary
         lines.append(">> Threat Summary:")
         if not summary:
             lines.append("  No threats recorded yet.")
@@ -444,7 +435,7 @@ class AdaptiveEngine:
                 lines.append(f"  - {label}: {count}")
         lines.append("")
 
-        # Analysis section
+        # Analysis
         lines.append(">> Analysis:")
         lines.append(f"  Total threats: {analysis['total_count']}")
         lines.append(f"  Average severity: {analysis['average_severity']:.2f}")
@@ -532,10 +523,6 @@ class AdaptiveEngine:
     def threat_insights(self, min_severity: int = 0) -> str:
         """
         Produce a human-readable summary of threat patterns stored in memory.
-        Example output:
-            High severity reorg patterns: 4
-            Wallet anomalies: 2
-            PQC entropy warnings: 1
         """
         summary = self.summarize_threats(min_severity=min_severity)
 
@@ -558,6 +545,13 @@ class AdaptiveEngine:
         event: RiskEvent,
         per_layer: Dict[str, LayerAdjustment],
     ) -> None:
+        """
+        Apply learning from a single feedback event.
+
+        Supports both:
+          - FeedbackType enums
+          - string tags like "TRUE_POSITIVE", "false_positive", "missed_attack"
+        """
         layer = event.layer
 
         if layer not in self.state.layer_weights:
@@ -566,23 +560,38 @@ class AdaptiveEngine:
 
         adj = per_layer[layer]
 
-        if event.feedback == FeedbackType.TRUE_POSITIVE:
+        # Normalise feedback into an upper-case string tag
+        fb = event.feedback
+        if isinstance(fb, FeedbackType):
+            tag = fb.name.upper()
+        else:
+            tag = str(fb).upper()
+
+        if tag == "TRUE_POSITIVE":
+            # The reporting layer was correct → trust it a bit more,
+            # and make the system slightly stricter.
             self.state.layer_weights[layer] += 0.05
             self.state.global_threshold += 0.01
             adj.weight_delta += 0.05
             adj.threshold_shift += 0.01
 
-        elif event.feedback == FeedbackType.FALSE_POSITIVE:
+        elif tag == "FALSE_POSITIVE":
+            # The reporting layer overreacted → trust it a bit less,
+            # and relax the global threshold slightly.
             self.state.layer_weights[layer] -= 0.05
             self.state.global_threshold -= 0.01
             adj.weight_delta -= 0.05
             adj.threshold_shift -= 0.01
 
-        elif event.feedback == FeedbackType.MISSED_ATTACK:
+        elif tag == "MISSED_ATTACK":
+            # A real attack slipped through → *all* layers need to become
+            # more sensitive, and the global threshold tightens more.
             for l in self.state.layer_weights:
                 self.state.layer_weights[l] += 0.02
                 per_layer.setdefault(l, LayerAdjustment()).weight_delta += 0.02
             self.state.global_threshold += 0.02
+
+        # Any other / unknown tag → no learning
 
     def _clamp_state(self) -> None:
         """
