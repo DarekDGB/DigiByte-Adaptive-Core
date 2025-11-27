@@ -177,6 +177,88 @@ class AdaptiveEngine:
             "last_threats": last_threats,
         }
 
+    def detect_threat_patterns(
+        self,
+        min_severity: int = 0,
+        window: int = 20,
+    ) -> Dict[str, Any]:
+        """
+        Detect simple threat patterns in recent history.
+
+        Returns a dictionary with:
+            - window_size: number of recent packets inspected
+            - total_considered: total packets used after filtering
+            - rising_patterns: list of dicts describing threat types that
+              appear more frequently in the recent window than overall
+            - hotspot_layers: list of dicts with layers that appear most often
+              in the recent window
+        """
+        packets = [
+            p for p in self.threat_memory.list_packets()
+            if p.severity >= min_severity
+        ]
+
+        if not packets:
+            return {
+                "window_size": window,
+                "total_considered": 0,
+                "rising_patterns": [],
+                "hotspot_layers": [],
+            }
+
+        total_considered = len(packets)
+        # restrict to last `window` packets for short-term view
+        recent = packets[-window:]
+
+        # counts per type overall and in recent window
+        total_type_counts: Dict[str, int] = {}
+        recent_type_counts: Dict[str, int] = {}
+        for p in packets:
+            total_type_counts[p.threat_type] = total_type_counts.get(p.threat_type, 0) + 1
+        for p in recent:
+            recent_type_counts[p.threat_type] = recent_type_counts.get(p.threat_type, 0) + 1
+
+        rising_patterns = []
+        for t, recent_count in recent_type_counts.items():
+            total_count = total_type_counts.get(t, 0)
+            if total_count == 0:
+                continue
+
+            recent_freq = recent_count / float(len(recent))
+            overall_freq = total_count / float(total_considered)
+
+            # simple heuristic: recent frequency 1.5x higher than overall
+            # and at least 2 occurrences in the recent window
+            if recent_count >= 2 and recent_freq > overall_freq * 1.5:
+                rising_patterns.append(
+                    {
+                        "threat_type": t,
+                        "recent_count": recent_count,
+                        "total_count": total_count,
+                        "recent_frequency": recent_freq,
+                        "overall_frequency": overall_freq,
+                    }
+                )
+
+        # hotspot layers in recent window
+        layer_counts: Dict[str, int] = {}
+        for p in recent:
+            layer_counts[p.source_layer] = layer_counts.get(p.source_layer, 0) + 1
+
+        hotspot_layers = [
+            {"source_layer": layer, "recent_count": count}
+            for layer, count in sorted(
+                layer_counts.items(), key=lambda x: x[1], reverse=True
+            )
+        ]
+
+        return {
+            "window_size": len(recent),
+            "total_considered": total_considered,
+            "rising_patterns": rising_patterns,
+            "hotspot_layers": hotspot_layers,
+        }
+
     def threat_insights(self, min_severity: int = 0) -> str:
         """
         Produce a human-readable summary of threat patterns stored in memory.
