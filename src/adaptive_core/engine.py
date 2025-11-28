@@ -556,6 +556,47 @@ class AdaptiveEngine:
         }
 
     # ------------------------------------------------------------------ #
+    # Pattern & correlation wrappers used by tests / internal callers
+    # ------------------------------------------------------------------ #
+
+    def _run_pattern_detector(self) -> Dict[str, Any]:
+        """
+        Lightweight wrapper around detect_threat_patterns().
+
+        Returns a stable dictionary for internal callers and tests.
+        """
+        patterns = self.detect_threat_patterns()
+        pattern_found = bool(
+            patterns.get("rising_patterns") or patterns.get("hotspot_layers")
+        )
+
+        return {
+            "pattern_found": pattern_found,
+            "window_size": patterns.get("window_size", 0),
+            "total_considered": patterns.get("total_considered", 0),
+        }
+
+    def _run_correlation_detector(self) -> Dict[str, Any]:
+        """
+        Lightweight wrapper around detect_threat_correlations().
+
+        Produces a simple correlation_score plus raw correlation data.
+        """
+        correlations = self.detect_threat_correlations()
+
+        score = 0.0
+        if correlations.get("pair_correlations"):
+            score += 0.5
+        if correlations.get("layer_threat_combos"):
+            score += 0.5
+
+        return {
+            "correlation_score": score,
+            "pair_correlations": correlations.get("pair_correlations", []),
+            "layer_threat_combos": correlations.get("layer_threat_combos", []),
+        }
+
+    # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #
 
