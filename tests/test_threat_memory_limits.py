@@ -11,12 +11,13 @@ from adaptive_core.threat_packet import ThreatPacket
 def _make_packet(i: int) -> ThreatPacket:
     """
     Create a minimal ThreatPacket instance that matches the real
-    ThreatPacket schema used in the project. No extra fields.
+    ThreatPacket schema used in the project.
     """
     return ThreatPacket(
         source_layer="test_layer",
         threat_type="test_threat",
         severity=5,
+        description="test threat packet",
         timestamp="2025-01-01T00:00:00Z",
         node_id=f"node-{i}",
         wallet_id=None,
