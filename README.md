@@ -1,8 +1,8 @@
 # 🧬 DigiByte Adaptive Core — v2
 
-Author: DarekDGB  
-AI Engineering Assistant: Angel  
-License: MIT
+Author: **DarekDGB**  
+AI Engineering Assistant: **Angel**  
+License: **MIT**
 
 ---
 
@@ -84,39 +84,70 @@ Each loop makes the shield stronger.
 
 ## 5. Tests Included
 
-- test_deep_pattern_engine.py  
-- test_engine.py  
-- test_immune_report.py  
-- test_interface_events.py  
-- test_pattern_engine.py  
-- test_threat_memory_limits.py  
+The test suite covers every critical component:
 
-All currently **passing**.
+- **test_deep_pattern_engine.py**  
+- **test_engine.py**  
+- **test_immune_report.py**  
+- **test_interface_events.py**  
+- **test_pattern_engine.py**  
+- **test_threat_memory_limits.py**  
+
+All tests are currently **passing** (CI green).
 
 ---
 
 ## 6. Reports Included
 
-- Full_Scale_Attack_Simulation_v2.md  
-- Full_Scale_Attack_Simulation_AdaptiveCore.md  
-- Adaptive_ImmuneSystem_LearningReport.md  
+The Adaptive Core ships with detailed analytical reports:
 
-These show learning behaviour over repeated attacks.
+- **Adaptive_ImmuneSystem_LearningReport.md**  
+- **Full_Scale_Attack_Simulation_AdaptiveCore.md**  
+- **Full_Scale_Attack_Simulation_v2.md**  
+
+These documents show how the immune system:
+- learns  
+- adapts  
+- reinforces memory  
+- responds faster under repeated attack  
 
 ---
 
-## 7. Integration Readiness
+## 7. Additional Documentation
+
+All high‑level and developer‑focused docs are stored in `docs/reports/`:
+
+- **AdaptiveCore_CodeBlueprint_v2.md**  
+- **AdaptiveCore_DeveloperGuide_v2.md**  
+- **AdaptiveCore_TechSpec_v2.md**  
+- **AdaptiveCore_Whitepaper_v2.md**  
+
+These provide:
+- architecture overview  
+- module responsibilities  
+- API usage  
+- integration examples  
+- technical specifications  
+
+---
+
+## 8. Integration Readiness
 
 The Adaptive Core is **complete for v2** and ready for:
 
 - standalone simulation  
 - full‑shield orchestration  
 - DigiByte testnet integration  
-- future PQC-aware memory upgrades  
+- PQC‑aware memory evolution in future versions  
+
+It is the sixth and final layer required before the full merged **DigiByte Quantum Immune Shield** repository is assembled.
 
 ---
 
-## 8. License (MIT)
-Open‑source. Fully permissionless. Safe for integration with DigiByte and any UTXO chain.
+## 9. License (MIT)
+
+Open‑source. Fully permissionless.  
+Safe for DigiByte and any other UTXO blockchain.
 
 ---
+
