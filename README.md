@@ -1,90 +1,122 @@
-# DigiByte Quantum Adaptive Core v2 — Technical Documentation
-### Self-Learning Digital Immune System (Shared Adaptive Layer for All 5 Shield Layers)
+# 🧬 DigiByte Adaptive Core — v2
 
-## 1. Purpose
-The **DigiByte Quantum Adaptive Core v2** is the shared, self-learning immune layer that strengthens all five layers of the DigiByte Quantum Shield Network.
-It provides:
-- **Threat Memory** — persistent storage of unified ThreatPackets
-- **Pattern Detection** — rising threats, hotspots, frequency shifts
-- **Correlation Analysis** — threat pairings + layer-type combinations
-- **Trend Detection** — hour/day activity evolution
-- **Deep Pattern Engine v2** — composite risk scoring, spike scoring, diversity scoring
-- **Reinforcement Learning** — adaptive thresholds & layer weighting
-- **Adaptive State Management** — bounded, self-correcting values
-- **Full Immune Reports** — human-readable and machine-readable
-- **Heartbeat Metadata** — last threat + last learning timestamps
-
-## 2. Architecture
-```
-ThreatPackets
-     ↓
-ThreatMemory (persistent store)
-     ↓
-Analysis Stack (patterns → correlations → trends → deep patterns)
-     ↓
-Reinforcement Learning (event-driven feedback)
-     ↓
-Adaptive State Update (bounded weights + thresholds)
-     ↓
-Immune Report (v2 full diagnostics)
-```
-
-## 3. Core Components
-### AdaptiveEngine
-Central reinforcement + analysis engine.
-
-### ThreatMemory
-Persistent JSON-based store for all ThreatPackets.
-
-### ThreatPacket
-Unified threat structure (Sentinel AI v2, DQSN v2, ADN v2, Guardian Wallet v2, QWG v1/v2).
-
-### DeepPatternEngine v2
-Advanced threat signal processor.
-
-### AdaptiveCoreInterface
-Public-facing API for all shield layers.
-
-## 4. Submitting Threats
-```python
-interface.submit_threat_packet(packet)
-```
-
-## 5. Submitting Feedback (Learning Updates)
-```python
-interface.submit_feedback_events([...])
-```
-
-## 6. Generate Immune Report (v2)
-```python
-report = interface.get_immune_report_text()
-```
-
-## 7. Metadata
-```python
-interface.get_last_update_metadata()
-```
-
-## 8. Safety & Guarantees
-- bounded weights
-- bounded thresholds
-- strict memory pruning
-- stable return structures
-- normalized feedback
-
-## 9. Version
-**DigiByte Quantum Adaptive Core v2**
+Author: DarekDGB  
+AI Engineering Assistant: Angel  
+License: MIT
 
 ---
 
-## MIT License
+## 1. Purpose of the Adaptive Core
+The Adaptive Core is the **immune system** of the entire DigiByte Quantum Shield architecture.  
+While the 5 primary layers (Sentinel AI v2, DQSN v2, ADN v2, Guardian Wallet v2, QWG v2) provide detection, confirmation, defense, and wallet safety…  
+**the Adaptive Core learns.**
 
-MIT License
+It continuously:
+- observes high‑risk patterns  
+- stores threat memory  
+- reinforces known signatures  
+- evolves new signatures  
+- sends immune alerts back to all layers  
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files...
+This allows DigiByte to *get stronger after every attack*.
 
 ---
 
-## Author
-**DarekDGB & Angel**
+## 2. Core Components
+
+### 🧠 2.1 Pattern Engine
+Learns attack sequences, emerging anomalies, repeated patterns.
+
+### 🗂 2.2 Threat Memory
+Stores condensed “threat packets” describing previous high‑risk events.
+
+### ✏️ 2.3 Memory Writer
+Writes threat packets into long‑term memory and performs pruning rules.
+
+### 🔌 2.4 Interface Layer
+The external API for the other 5 layers to communicate with the Adaptive Core.
+
+### ⚙️ 2.5 Engine
+Coordinates memory, pattern logic, scoring and produces an **Immune Response Packet**.
+
+---
+
+## 3. What the Adaptive Core Learns
+
+The system incrementally learns:
+
+- UTXO cluster anomalies  
+- Time‑compressed activity bursts  
+- Dormant key sweeps  
+- Multi‑layer correlated risk  
+- Behavioural anomalies  
+- Rare or new unseen attack sequences  
+- Network‑level cross‑signals from DQSN  
+- Node‑level reflex triggers from ADN  
+- Wallet‑level behaviour changes (GW + QWG)
+
+This produces a **Network Immune Score (NIS)** and an **Immune Severity Level**.
+
+---
+
+## 4. Data Flow
+
+```
+[Sentinel AI] →  
+    signal packets (entropy drops, reorg patterns)
+        ↓
+[DQSN] →  
+    global confirmation + cluster scoring
+        ↓
+[ADN v2] →  
+    defensive events (lockdown, API throttling)
+        ↓
+[Wallet Layers] →  
+    behavioural + quantum signatures
+        ↓
+[Adaptive Core] →  
+    learn → store → evolve → return immune packet
+```
+
+Each loop makes the shield stronger.
+
+---
+
+## 5. Tests Included
+
+- test_deep_pattern_engine.py  
+- test_engine.py  
+- test_immune_report.py  
+- test_interface_events.py  
+- test_pattern_engine.py  
+- test_threat_memory_limits.py  
+
+All currently **passing**.
+
+---
+
+## 6. Reports Included
+
+- Full_Scale_Attack_Simulation_v2.md  
+- Full_Scale_Attack_Simulation_AdaptiveCore.md  
+- Adaptive_ImmuneSystem_LearningReport.md  
+
+These show learning behaviour over repeated attacks.
+
+---
+
+## 7. Integration Readiness
+
+The Adaptive Core is **complete for v2** and ready for:
+
+- standalone simulation  
+- full‑shield orchestration  
+- DigiByte testnet integration  
+- future PQC-aware memory upgrades  
+
+---
+
+## 8. License (MIT)
+Open‑source. Fully permissionless. Safe for integration with DigiByte and any UTXO chain.
+
+---
