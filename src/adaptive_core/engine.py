@@ -37,25 +37,31 @@ class AdaptiveEngine:
           * tighten global threshold more
 
     All changes are small and bounded, to avoid oscillations.
+
+    v2 Patch B rule:
+      - Engine must not perform implicit disk I/O by default.
+      - ThreatMemory persistence is opt-in and injected.
     """
 
     def __init__(
         self,
         store: InMemoryAdaptiveStore | None = None,
         initial_state: AdaptiveState | None = None,
+        threat_memory: ThreatMemory | None = None,
     ) -> None:
         # Store keeps a history of raw events (and in future, snapshots).
         self.store = store or InMemoryAdaptiveStore()
+
         # If no initial state is provided, start with an empty mapping and
         # default global_threshold from AdaptiveState.
         self.state = initial_state or AdaptiveState(layer_weights={})
 
-        # Threat memory: stores unified ThreatPacket objects coming
-        # from all shield layers. Loaded from disk if present.
-        self.threat_memory = ThreatMemory()
+        # Threat memory (opt-in persistence). Default is in-memory only.
+        self.threat_memory = threat_memory or ThreatMemory(path=None)
         self.threat_memory.load()
 
         # Last update metadata (UTC ISO strings, or None if never updated).
+        # Telemetry only — not used for decisions.
         self.last_threat_received: Optional[str] = None
         self.last_learning_update: Optional[str] = None
 
@@ -90,7 +96,7 @@ class AdaptiveEngine:
 
         self._clamp_state()
 
-        # if we processed any feedback, record learning timestamp
+        # if we processed any feedback, record learning timestamp (telemetry only)
         if events_list:
             self.last_learning_update = datetime.utcnow().isoformat() + "Z"
 
@@ -102,12 +108,15 @@ class AdaptiveEngine:
 
     def receive_threat_packet(self, packet: ThreatPacket) -> None:
         """
-        Receive a ThreatPacket from any shield layer and persist it
+        Receive a ThreatPacket from any shield layer and store it
         into ThreatMemory.
+
+        Persistence is opt-in. save() is a no-op unless ThreatMemory.path is set.
         """
         self.threat_memory.add_packet(packet)
         self.threat_memory.save()
-        # record last time any threat was seen
+
+        # record last time any threat was seen (telemetry only)
         self.last_threat_received = datetime.utcnow().isoformat() + "Z"
 
     def summarize_threats(self, min_severity: int = 0) -> Dict[str, int]:
@@ -563,6 +572,7 @@ class AdaptiveEngine:
     def get_last_update_metadata(self) -> Dict[str, Optional[str]]:
         """
         Return timestamps (UTC ISO strings) of last threat and last learning.
+        Telemetry only — not used for decisions.
         """
         return {
             "last_threat_received": self.last_threat_received,
