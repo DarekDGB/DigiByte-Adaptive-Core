@@ -1,11 +1,11 @@
 # Adaptive Core v3 — Architecture Diagram Pack
 
-This file provides **visual architecture** only (no duplicated prose).
+This file provides **visual architecture only** (no duplicated prose).
 Authoritative behavioral rules remain in:
-- `AUTHORITY_BOUNDARIES.md`
-- `CONTRACT.md`
-- `REASON_IDS.md`
-- `SECURITY.md`
+- AUTHORITY_BOUNDARIES.md
+- CONTRACT.md
+- REASON_IDS.md
+- SECURITY.md
 
 ---
 
@@ -40,7 +40,7 @@ flowchart TB
   F --> R
   R --> H
 
-  H -->|advisory outputs only| Humans["Human Review\n(maintainer / auditors)"]
+  H -->|advisory outputs only| Humans["Human Review\n(maintainers / auditors)"]
   Humans -->|manual upgrades + tests| Shield_Layers
 ```
 
@@ -61,7 +61,7 @@ sequenceDiagram
   participant H as Envelope
 
   L->>C: raw observation (mapping)
-  C-->>L: FAIL-CLOSED error (reason_id) OR canonical event + context_hash
+  C-->>L: FAIL-CLOSED error OR canonical event + context_hash
   C->>E: add(canonical event)
   E->>F: snapshot() counters
   Note over D: Only if explicit LayerContract inputs provided
@@ -69,13 +69,13 @@ sequenceDiagram
   F->>V: union guardrail ids
   V-->>R: titles + validation (unknown => fail)
   F->>R: evidence findings
-  R->>H: stable hash + signature status (ABSENT/PRESENT/UNSUPPORTED)
-  H-->>L: (report, canonical_json, markdown, envelope)
+  R->>H: stable hash + signature status
+  H-->>L: report + envelope
 ```
 
 ---
 
-## 3) Authority Boundary Map (what v3 can and cannot do)
+## 3) Authority Boundary Map
 
 ```mermaid
 flowchart LR
@@ -110,13 +110,13 @@ flowchart TB
   subgraph NodeA["Node A"]
     A1["Observed Events (raw)"]
     A2["Canonicalize + Evidence Window"]
-    A3["NodeSummaryEventV3\n(aggregated counts)"]
+    A3["NodeSummaryEventV3"]
   end
 
   subgraph NodeB["Node B"]
     B1["Observed Events (raw)"]
     B2["Canonicalize + Evidence Window"]
-    B3["NodeSummaryEventV3\n(aggregated counts)"]
+    B3["NodeSummaryEventV3"]
   end
 
   subgraph Hub["Collector / Reviewer"]
@@ -125,10 +125,9 @@ flowchart TB
     H3["Human-reviewed decisions"]
   end
 
-  A1 --> A2 --> A3 --> Hub
-  B1 --> B2 --> B3 --> Hub
-
-  note over Hub: No raw events required\nOnly aggregated counters + context hashes
+  A1 --> A2 --> A3 --> H1
+  B1 --> B2 --> B3 --> H1
+  H1 --> H2 --> H3
 ```
 
 ---
@@ -136,5 +135,5 @@ flowchart TB
 ## Notes
 
 - Diagrams intentionally avoid implementation detail beyond module boundaries.
-- Keep these diagrams aligned with code paths in `adaptive_core/v3/*`.
-- If diagrams and code ever disagree, treat **code + CONTRACT** as the source of truth.
+- Keep aligned with adaptive_core/v3/* code paths.
+- If diagrams and code disagree, **code + CONTRACT win**.
