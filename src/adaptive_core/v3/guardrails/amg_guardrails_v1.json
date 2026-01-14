@@ -2,14 +2,83 @@
   "version": "v1",
   "guardrails": [
     {"id": "AMG-001", "title": "Deny-by-Default", "category": "authority"},
-    {"id": "AMG-014", "title": "No Silent Fallback", "category": "fail_closed"},
-    {"id": "AMG-022", "title": "Strict Input Canonicalization", "category": "input"},
-    {"id": "AMG-037", "title": "Determinism Guardian", "category": "determinism"},
-    {"id": "AMG-041", "title": "No Hidden Authority", "category": "authority"},
-    {"id": "AMG-045", "title": "Contract Version Discipline", "category": "contract"},
-    {"id": "AMG-051", "title": "No Fix Without Test", "category": "testing"},
-    {"id": "AMG-055", "title": "Proof Pack Required", "category": "testing"},
-    {"id": "AMG-059", "title": "Observability Without Leakage", "category": "observability"},
-    {"id": "AMG-060", "title": "Negative-First Testing", "category": "testing"}
+    {"id": "AMG-002", "title": "Explicit Allow Lists Only", "category": "authority"},
+    {"id": "AMG-003", "title": "No Privilege Escalation Paths", "category": "authority"},
+    {"id": "AMG-004", "title": "Separation of Powers", "category": "authority"},
+    {"id": "AMG-005", "title": "No Hidden Authority", "category": "authority"},
+
+    {"id": "AMG-006", "title": "Strict Input Validation", "category": "input"},
+    {"id": "AMG-007", "title": "Strict Canonicalization", "category": "input"},
+    {"id": "AMG-008", "title": "Reject Ambiguity", "category": "input"},
+    {"id": "AMG-009", "title": "Toxic Input Tests", "category": "input"},
+    {"id": "AMG-010", "title": "Schema-First Contracts", "category": "contract"},
+
+    {"id": "AMG-011", "title": "Fail-Closed Defaults", "category": "fail_closed"},
+    {"id": "AMG-012", "title": "No Silent Fallback", "category": "fail_closed"},
+    {"id": "AMG-013", "title": "Explicit Reason Codes", "category": "fail_closed"},
+    {"id": "AMG-014", "title": "No Implicit Defaults", "category": "fail_closed"},
+    {"id": "AMG-015", "title": "No Best-Effort Parsing", "category": "fail_closed"},
+
+    {"id": "AMG-016", "title": "Deterministic Outputs", "category": "determinism"},
+    {"id": "AMG-017", "title": "No Time/Randomness Dependence", "category": "determinism"},
+    {"id": "AMG-018", "title": "Stable Serialization", "category": "determinism"},
+    {"id": "AMG-019", "title": "Replay Determinism Tests", "category": "determinism"},
+    {"id": "AMG-020", "title": "No Global State", "category": "determinism"},
+
+    {"id": "AMG-021", "title": "Contract Version Discipline", "category": "contract"},
+    {"id": "AMG-022", "title": "Interface Freeze Discipline", "category": "contract"},
+    {"id": "AMG-023", "title": "Semantic Change = Version Bump", "category": "contract"},
+    {"id": "AMG-024", "title": "Single Source of Truth", "category": "contract"},
+    {"id": "AMG-025", "title": "No Magic Strings for IDs", "category": "contract"},
+
+    {"id": "AMG-026", "title": "Negative-First Testing", "category": "testing"},
+    {"id": "AMG-027", "title": "No Fix Without Test", "category": "testing"},
+    {"id": "AMG-028", "title": "Regression Lock Required", "category": "testing"},
+    {"id": "AMG-029", "title": "Coverage Must Not Regress", "category": "testing"},
+    {"id": "AMG-030", "title": "Deterministic Test Corpus", "category": "testing"},
+
+    {"id": "AMG-031", "title": "Minimal TCB", "category": "security"},
+    {"id": "AMG-032", "title": "Dependency Pinning", "category": "supply_chain"},
+    {"id": "AMG-033", "title": "Reproducible Builds", "category": "supply_chain"},
+    {"id": "AMG-034", "title": "No Supply Chain Surprises", "category": "supply_chain"},
+    {"id": "AMG-035", "title": "Auditability First", "category": "security"},
+
+    {"id": "AMG-036", "title": "Observability Without Leakage", "category": "observability"},
+    {"id": "AMG-037", "title": "Metrics are Non-Sensitive", "category": "observability"},
+    {"id": "AMG-038", "title": "No Secrets in Logs", "category": "observability"},
+    {"id": "AMG-039", "title": "Fail-Closed on Telemetry Errors", "category": "observability"},
+    {"id": "AMG-040", "title": "Traceability of Decisions", "category": "observability"},
+
+    {"id": "AMG-041", "title": "No Auto-Execution Authority", "category": "authority"},
+    {"id": "AMG-042", "title": "Human Review Required", "category": "authority"},
+    {"id": "AMG-043", "title": "No Self-Deploy", "category": "authority"},
+    {"id": "AMG-044", "title": "No Hidden Config Mutation", "category": "authority"},
+    {"id": "AMG-045", "title": "Explicit Capability Disclosure", "category": "authority"},
+
+    {"id": "AMG-046", "title": "Strict Boundary Enforcement", "category": "security"},
+    {"id": "AMG-047", "title": "Least Privilege Interfaces", "category": "security"},
+    {"id": "AMG-048", "title": "Attack-First Mindset", "category": "security"},
+    {"id": "AMG-049", "title": "Failure-First Design", "category": "security"},
+    {"id": "AMG-050", "title": "No Silent Recovery", "category": "security"},
+
+    {"id": "AMG-051", "title": "Proof Pack Required", "category": "testing"},
+    {"id": "AMG-052", "title": "Docs Map 1:1 to Tests", "category": "testing"},
+    {"id": "AMG-053", "title": "Invariant Naming Discipline", "category": "testing"},
+    {"id": "AMG-054", "title": "Contract IDs in Tests", "category": "testing"},
+    {"id": "AMG-055", "title": "Exit Criteria Guardian", "category": "testing"},
+
+    {"id": "AMG-056", "title": "Strict Canonical Hashing", "category": "determinism"},
+    {"id": "AMG-057", "title": "No Order Dependence", "category": "determinism"},
+    {"id": "AMG-058", "title": "No Time in Reports", "category": "determinism"},
+    {"id": "AMG-059", "title": "Stable Report Hashes", "category": "determinism"},
+    {"id": "AMG-060", "title": "Two-Implementation Spot Check (Optional)", "category": "determinism"},
+
+    {"id": "AMG-061", "title": "Privacy-Preserving Aggregation", "category": "observability"},
+    {"id": "AMG-062", "title": "No Raw Data Centralization", "category": "observability"},
+    {"id": "AMG-063", "title": "Strict Summary Schemas", "category": "observability"},
+    {"id": "AMG-064", "title": "Fail-Closed on Summary Ambiguity", "category": "observability"},
+    {"id": "AMG-065", "title": "Audit Trail Stability", "category": "security"},
+
+    {"id": "AMG-066", "title": "No Backdoors / No Escape Hatches", "category": "security"}
   ]
 }
