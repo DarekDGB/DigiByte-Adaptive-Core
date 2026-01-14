@@ -29,6 +29,9 @@ class UpgradeReportV3:
 
     capabilities: CapabilitiesV3
 
+    # NEW in Step 8: optional drift visualization (deterministic text)
+    drift_dot: Optional[str]
+
     recommended_actions: List[str]
     required_tests: List[str]
     exit_criteria: List[str]
