@@ -13,37 +13,40 @@ def test_in_memory_event_sink_stores_events_in_order():
     assert sink.events[1]["type"] == "t2"
 
 
-def test_writer_write_event_appends_to_sink():
+def test_writer_write_from_dict_accepts_minimal_adaptive_event_and_stores_it():
+    """
+    AdaptiveMemoryWriter.write_from_dict() should accept dicts matching AdaptiveEvent fields.
+    The repo's own docstring shows keys like: layer, anomaly_type, ...
+    """
     sink = InMemoryEventSink()
     writer = AdaptiveMemoryWriter(sink=sink)
 
-    writer.write_event(event_type="alpha", payload={"x": 1})
-    writer.write_event(event_type="beta", payload={"y": 2})
+    writer.write_from_dict(
+        {
+            "layer": "sentinel",
+            "anomaly_type": "entropy_drop",
+        }
+    )
 
-    assert len(sink.events) == 2
-    assert sink.events[0]["event_type"] == "alpha"
-    assert sink.events[0]["payload"] == {"x": 1}
-    assert sink.events[1]["event_type"] == "beta"
-    assert sink.events[1]["payload"] == {"y": 2}
-
-
-def test_writer_write_from_dict_requires_type_key():
-    sink = InMemoryEventSink()
-    writer = AdaptiveMemoryWriter(sink=sink)
-
-    # missing "event_type" should raise
-    try:
-        writer.write_from_dict({"payload": {"x": 1}})
-        assert False, "expected ValueError"
-    except ValueError as e:
-        assert "event_type" in str(e).lower()
-
-
-def test_writer_write_from_dict_accepts_full_event():
-    sink = InMemoryEventSink()
-    writer = AdaptiveMemoryWriter(sink=sink)
-
-    writer.write_from_dict({"event_type": "gamma", "payload": {"z": 9}})
     assert len(sink.events) == 1
-    assert sink.events[0]["event_type"] == "gamma"
-    assert sink.events[0]["payload"] == {"z": 9}
+
+    stored = sink.events[0]
+    # stored may be a dataclass or dict depending on implementation; accept both
+    if isinstance(stored, dict):
+        assert stored.get("layer") == "sentinel"
+        assert stored.get("anomaly_type") == "entropy_drop"
+    else:
+        assert getattr(stored, "layer") == "sentinel"
+        assert getattr(stored, "anomaly_type") == "entropy_drop"
+
+
+def test_writer_write_from_dict_rejects_unknown_fields_fail_closed():
+    sink = InMemoryEventSink()
+    writer = AdaptiveMemoryWriter(sink=sink)
+
+    try:
+        writer.write_from_dict({"layer": "sentinel", "anomaly_type": "x", "payload": {"no": "thanks"}})
+        assert False, "expected TypeError for unknown field"
+    except TypeError as e:
+        # exact message may vary across python versions; just ensure it's about unexpected kw
+        assert "unexpected" in str(e).lower()
