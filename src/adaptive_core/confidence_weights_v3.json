@@ -1,9 +1,0 @@
-{
-  "version": "v3",
-  "weights": {
-    "recurrence": 0.35,
-    "severity": 0.25,
-    "reproducibility": 0.20,
-    "cross_layer_impact": 0.20
-  }
-}
