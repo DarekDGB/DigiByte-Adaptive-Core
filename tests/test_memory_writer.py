@@ -13,10 +13,9 @@ def test_in_memory_event_sink_stores_events_in_order():
     assert sink.events[1]["type"] == "t2"
 
 
-def test_writer_write_from_dict_accepts_minimal_adaptive_event_and_stores_it():
+def test_writer_write_from_dict_accepts_adaptive_event_and_stores_it():
     """
-    AdaptiveMemoryWriter.write_from_dict() should accept dicts matching AdaptiveEvent fields.
-    The repo's own docstring shows keys like: layer, anomaly_type, ...
+    AdaptiveEvent requires 'severity' (per failure output).
     """
     sink = InMemoryEventSink()
     writer = AdaptiveMemoryWriter(sink=sink)
@@ -25,6 +24,7 @@ def test_writer_write_from_dict_accepts_minimal_adaptive_event_and_stores_it():
         {
             "layer": "sentinel",
             "anomaly_type": "entropy_drop",
+            "severity": 1,
         }
     )
 
@@ -35,9 +35,11 @@ def test_writer_write_from_dict_accepts_minimal_adaptive_event_and_stores_it():
     if isinstance(stored, dict):
         assert stored.get("layer") == "sentinel"
         assert stored.get("anomaly_type") == "entropy_drop"
+        assert int(stored.get("severity")) == 1
     else:
         assert getattr(stored, "layer") == "sentinel"
         assert getattr(stored, "anomaly_type") == "entropy_drop"
+        assert int(getattr(stored, "severity")) == 1
 
 
 def test_writer_write_from_dict_rejects_unknown_fields_fail_closed():
@@ -45,8 +47,14 @@ def test_writer_write_from_dict_rejects_unknown_fields_fail_closed():
     writer = AdaptiveMemoryWriter(sink=sink)
 
     try:
-        writer.write_from_dict({"layer": "sentinel", "anomaly_type": "x", "payload": {"no": "thanks"}})
+        writer.write_from_dict(
+            {
+                "layer": "sentinel",
+                "anomaly_type": "x",
+                "severity": 1,
+                "payload": {"no": "thanks"},
+            }
+        )
         assert False, "expected TypeError for unknown field"
     except TypeError as e:
-        # exact message may vary across python versions; just ensure it's about unexpected kw
         assert "unexpected" in str(e).lower()
