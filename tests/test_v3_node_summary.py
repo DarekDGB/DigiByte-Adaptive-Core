@@ -121,3 +121,8 @@ def test_by_upstream_reason_id_rejects_non_string_key():
     with pytest.raises(ValueError) as e:
         canonicalize_node_summary(_base(by_upstream_reason_id={1: 2}))  # type: ignore[dict-item]
     assert "AC_V3_TYPE_INVALID" in str(e.value)
+
+def test_total_events_rejects_bool_hits_line_61():
+    with pytest.raises(ValueError) as e:
+        canonicalize_node_summary(_base(total_events=False))  # bool must be rejected
+    assert "AC_V3_TYPE_INVALID" in str(e.value)
