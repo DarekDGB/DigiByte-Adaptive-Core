@@ -23,7 +23,10 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.1",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -33,4 +36,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --cov=adaptive_core --cov-report=term-missing --cov-fail-under=90"
