@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from .analyze import AnalyzeConfig, generate_findings
 from .confidence import compute_confidence, load_confidence_weights
+from .correlation import CorrelationSnapshot, generate_correlation_findings
 from .drift import LayerContract, detect_contract_drift
 from .evidence_store import EvidenceSnapshot
 from .findings import FindingV3
@@ -29,15 +30,19 @@ def build_upgrade_report(
     snapshot: EvidenceSnapshot,
     capabilities: CapabilitiesV3,
     confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
-    # NEW in Step 8:
+    # Step 8:
     drift_contracts: Optional[List[LayerContract]] = None,
     include_drift_graph: bool = False,
+    # Step 10:
+    correlation_snapshot: Optional[CorrelationSnapshot] = None,
+    include_correlation: bool = False,
 ) -> UpgradeReportV3:
     """
     Build a deterministic v3 report.
 
     - Evidence findings come from counters (generate_findings)
     - Drift findings come from explicit LayerContract inputs (detect_contract_drift)
+    - Correlation findings come from explicit CorrelationSnapshot (generate_correlation_findings)
     - Guardrails are validated against registry (fail-closed)
     """
     if not report_id or not isinstance(report_id, str):
@@ -46,6 +51,10 @@ def build_upgrade_report(
         raise ValueError(f"{ReasonId.AC_V3_REPORT_INVALID.value}: target_layers")
     if drift_contracts is not None and not isinstance(drift_contracts, list):
         raise ValueError(f"{ReasonId.AC_V3_REPORT_INVALID.value}: drift_contracts must be list or None")
+    if correlation_snapshot is not None and not isinstance(correlation_snapshot, CorrelationSnapshot):
+        raise ValueError(f"{ReasonId.AC_V3_REPORT_INVALID.value}: correlation_snapshot must be CorrelationSnapshot or None")
+    if include_correlation and correlation_snapshot is None:
+        raise ValueError(f"{ReasonId.AC_V3_REPORT_INVALID.value}: include_correlation requires correlation_snapshot")
 
     registry = load_registry()
     weights = load_confidence_weights()
@@ -58,9 +67,14 @@ def build_upgrade_report(
     if drift_contracts:
         drift_findings = detect_contract_drift(drift_contracts)
 
+    # Correlation findings (explicit snapshot only — summaries, no raw events)
+    corr_findings: List[FindingV3] = []
+    if include_correlation and correlation_snapshot is not None:
+        corr_findings = generate_correlation_findings(correlation_snapshot)
+
     # Merge findings deterministically: sort by finding_id
     all_findings: List[FindingV3] = sorted(
-        (evidence_findings + drift_findings),
+        (evidence_findings + drift_findings + corr_findings),
         key=lambda f: f.finding_id,
     )
     findings_dicts: List[Dict[str, Any]] = [asdict(f) for f in all_findings]
@@ -73,6 +87,9 @@ def build_upgrade_report(
         "by_upstream_reason_id": dict(sorted(snapshot.by_upstream_reason_id.items())),
         "drift_contracts_provided": 0 if not drift_contracts else len(drift_contracts),
         "drift_findings": len(drift_findings),
+        "correlation_enabled": bool(include_correlation and correlation_snapshot is not None),
+        "correlation_nodes": 0 if correlation_snapshot is None else correlation_snapshot.total_nodes,
+        "correlation_findings": len(corr_findings),
     }
 
     total = snapshot.total_events if snapshot.total_events > 0 else 1
@@ -100,7 +117,8 @@ def build_upgrade_report(
     # deterministic: bounded in [0,1]
     drift_signal = 0.0 if not drift_findings else min(1.0, len(drift_findings) / 5.0)
     layer_signal = min(1.0, len(target_layers) / 5.0)
-    cross_layer_impact = max(drift_signal, layer_signal)
+    corr_signal = 0.0 if not corr_findings else min(1.0, len(corr_findings) / 5.0)
+    cross_layer_impact = max(drift_signal, layer_signal, corr_signal)
 
     confidence = compute_confidence(
         recurrence_ratio=max_reason_ratio,
@@ -147,6 +165,7 @@ def build_upgrade_report(
             recommended_actions=[
                 "Collect more evidence for recurring reason codes and anomalies.",
                 "If drift is suspected, provide LayerContract inputs for Drift Radar.",
+                "If widespread issues are suspected, provide CorrelationSnapshot (summaries only).",
             ],
             required_tests=[],
             exit_criteria=[
@@ -174,6 +193,7 @@ def build_upgrade_report(
         recommended_actions=[
             "Harden validation/canonicalization at boundaries where spikes occur.",
             "Resolve contract drift by aligning assumptions across layers (fail-closed).",
+            "If correlation indicates widespread issues, treat as global risk and prioritize fixes.",
             "Add negative tests and regression locks referencing this report_id.",
         ],
         required_tests=[
@@ -217,6 +237,9 @@ def render_report_md(report: UpgradeReportV3) -> str:
     lines.append(f"- Total events: {report.evidence.get('total_events')}")
     lines.append(f"- Drift contracts provided: {report.evidence.get('drift_contracts_provided')}")
     lines.append(f"- Drift findings: {report.evidence.get('drift_findings')}")
+    lines.append(f"- Correlation enabled: {report.evidence.get('correlation_enabled')}")
+    lines.append(f"- Correlation nodes: {report.evidence.get('correlation_nodes')}")
+    lines.append(f"- Correlation findings: {report.evidence.get('correlation_findings')}")
     lines.append("")
     lines.append("## 🛡️ Guardrails Triggered")
     for gid in report.guardrails:
