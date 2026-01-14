@@ -104,3 +104,10 @@ def test_reason_id_optional_but_if_present_must_be_non_empty_str():
     with pytest.raises(ValueError) as e2:
         canonicalize_event(_base(reason_id=123))  # type: ignore[arg-type]
     assert "AC_V3_TYPE_INVALID" in str(e2.value)
+
+def test_missing_severity_field_raises_missing_field():
+    d = _base()
+    del d["severity"]
+    with pytest.raises(ValueError) as e:
+        canonicalize_event(d)
+    assert "AC_V3_MISSING_FIELD" in str(e.value)
