@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from typing import Dict, Literal, Tuple
+from typing import Optional, Tuple, List
 
+from .drift import LayerContract
 from .evidence_store import EvidenceSnapshot
 from .envelope import ReportEnvelopeV3, create_report_envelope
 from .report_builder import build_upgrade_report, render_report_json, render_report_md
@@ -14,10 +14,13 @@ from .report_models import CapabilitiesV3, UpgradeReportV3
 def run_v3_pipeline(
     *,
     report_id: str,
-    target_layers: list[str],
+    target_layers: List[str],
     snapshot: EvidenceSnapshot,
     confidence_threshold: float,
     capabilities: CapabilitiesV3,
+    # NEW in Step 8:
+    drift_contracts: Optional[List[LayerContract]] = None,
+    include_drift_graph: bool = False,
 ) -> Tuple[UpgradeReportV3, str, str, ReportEnvelopeV3]:
     """
     Deterministic v3 pipeline runner.
@@ -34,12 +37,13 @@ def run_v3_pipeline(
         snapshot=snapshot,
         capabilities=capabilities,
         confidence_threshold=confidence_threshold,
+        drift_contracts=drift_contracts,
+        include_drift_graph=include_drift_graph,
     )
 
     canonical_json = render_report_json(report)
     markdown = render_report_md(report)
 
-    # Envelope is created explicitly (no hidden authority)
     envelope = create_report_envelope(
         report=report,
         canonical_json=canonical_json,
