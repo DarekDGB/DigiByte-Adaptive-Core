@@ -1,0 +1,19 @@
+{
+  "v": "upgrade_proposal_v3",
+  "proposal_id": "AC-UPG::YYYYMMDD::EXAMPLE-001",
+  "target": {
+    "component": "adaptive_core",
+    "version": "v3"
+  },
+  "created_utc": "2026-02-23T00:00:00Z",
+  "summary": "Short description of the proposed change.",
+  "changes": [
+    {
+      "change_id": "CHG-001",
+      "type": "modify",
+      "detail": "Describe what changes and why."
+    }
+  ],
+  "evidence": {},
+  "guardrails": ["AMG-001", "AMG-011"]
+}
