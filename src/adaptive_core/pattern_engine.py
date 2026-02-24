@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from .threat_memory import ThreatMemory
 from .threat_packet import ThreatPacket
@@ -54,9 +54,7 @@ class DeepPatternEngine:
           - composite_risk    (0.0 .. 1.0)
         """
         packets: List[ThreatPacket] = [
-            p
-            for p in self.memory.list_packets()
-            if p.severity >= min_severity
+            p for p in self.memory.list_packets() if p.severity >= min_severity
         ]
         total = len(packets)
 
@@ -87,7 +85,9 @@ class DeepPatternEngine:
         long_rate = long_count / float(self.long_window)
         short_rate = short_count / float(self.short_window)
 
-        if long_rate == 0.0:
+        # Invariant: if total > 0 then long_count >= 1 and long_window >= 1,
+        # so long_rate cannot be 0.0. Kept for defensive readability only.
+        if long_rate == 0.0:  # pragma: no cover
             spike_ratio = 1.0 if short_rate > 0.0 else 0.0
         else:
             spike_ratio = short_rate / long_rate
@@ -101,7 +101,9 @@ class DeepPatternEngine:
         # ------------------------------------------------------------------
         # Diversity score: how many different threat types appear recently?
         # ------------------------------------------------------------------
-        if short_count == 0:
+        # Invariant: if total > 0 and short_window >= 1 then short_count >= 1.
+        # Kept for defensive readability only.
+        if short_count == 0:  # pragma: no cover
             diversity_score = 0.0
         else:
             unique_types = {p.threat_type for p in short_slice}
