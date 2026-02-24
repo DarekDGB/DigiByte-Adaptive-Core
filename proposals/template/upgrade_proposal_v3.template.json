@@ -5,7 +5,7 @@
     "component": "adaptive_core",
     "version": "v3"
   },
-  "created_utc": "2026-02-23T00:00:00Z",
+  "created_utc": "2026-02-24T00:00:00Z",
   "summary": "Short description of the proposed change.",
   "changes": [
     {
@@ -15,5 +15,7 @@
     }
   ],
   "evidence": {},
-  "guardrails": ["AMG-001", "AMG-011"]
+  "guardrails": ["AMG-001", "AMG-011"],
+  "guardrails_ref": "adaptive_core.v3.guardrails/amg_guardrails_v1.json#v1",
+  "proposal_hash": "PUT_SHA256_OF_CANONICAL_JSON_HERE"
 }
