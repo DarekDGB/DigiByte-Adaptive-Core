@@ -333,3 +333,30 @@ def test_canonicalization_sorts_changes_and_guardrails() -> None:
     res = validate_and_canonicalize_upgrade_proposal(proposal)
     assert res.canonical["guardrails"] == ["AMG-001", "AMG-011"]
     assert [c["change_id"] for c in res.canonical["changes"]] == ["CHG-001", "CHG-002"]
+
+def test_guardrails_explicit_none_hits_branch() -> None:
+    proposal = _load_template()
+
+    # Explicit None must hit proposals.py line 86 (guardrails is None -> gids = []).
+    proposal["guardrails"] = None  # type: ignore[assignment]
+
+    # Compute proposal_hash the same way the validator does:
+    # it hashes the canonical form where guardrails becomes [].
+    base = dict(proposal)
+    base.pop("proposal_hash", None)
+
+    if "evidence" not in base or base["evidence"] is None:
+        base["evidence"] = {}
+    if "guardrails_ref" not in base or base["guardrails_ref"] is None:
+        base["guardrails_ref"] = ""
+
+    # Canonical outcome for guardrails=None is [] (this is the branch we’re covering).
+    base["guardrails"] = []
+
+    # Canonical changes ordering
+    base["changes"] = sorted(base["changes"], key=lambda d: d["change_id"])
+
+    proposal["proposal_hash"] = compute_proposal_hash(base)
+
+    res = validate_and_canonicalize_upgrade_proposal(proposal)
+    assert res.canonical["guardrails"] == []
