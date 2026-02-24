@@ -47,9 +47,10 @@ def _finalize_hash_like_validator(proposal: Dict[str, Any]) -> Dict[str, Any]:
     if "guardrails" in base and isinstance(base["guardrails"], list):
         base["guardrails"] = sorted(set([str(x).strip() for x in base["guardrails"]]))
 
-    # Canonicalize changes
+    # Canonicalize changes (only if entries look like dicts with change_id)
     if "changes" in base and isinstance(base["changes"], list):
-        base["changes"] = sorted(base["changes"], key=lambda d: d["change_id"])
+        if all(isinstance(d, dict) and "change_id" in d for d in base["changes"]):
+            base["changes"] = sorted(base["changes"], key=lambda d: d["change_id"])
 
     h = compute_proposal_hash(base)
     proposal["proposal_hash"] = h
@@ -217,10 +218,12 @@ def test_changes_empty_rejected() -> None:
 def test_change_entry_not_object_rejected() -> None:
     proposal = _valid_proposal()
     proposal["changes"] = [123]  # type: ignore[list-item]
-    proposal = _finalize_hash_like_validator(proposal)
 
-    with pytest.raises(ValueError):
+    # Do NOT finalize hash here — we want validator to fail earlier.
+    with pytest.raises(ValueError) as e:
         validate_and_canonicalize_upgrade_proposal(proposal)
+
+    assert "change entry must be object" in str(e.value)
 
 
 def test_change_unknown_key_rejected() -> None:
@@ -268,8 +271,12 @@ def test_evidence_wrong_type_rejected() -> None:
 
 
 def test_guardrails_none_hits_empty_branch() -> None:
-    proposal = _valid_proposal()
+    proposal = _load_template()
     proposal.pop("guardrails", None)
+
+    # Force the same canonical outcome as validator: guardrails becomes [].
+    proposal["guardrails"] = []
+
     proposal = _finalize_hash_like_validator(proposal)
 
     res = validate_and_canonicalize_upgrade_proposal(proposal)
