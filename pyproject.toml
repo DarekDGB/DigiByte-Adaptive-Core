@@ -36,4 +36,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --cov=adaptive_core --cov-report=term-missing --cov-fail-under=90"
+addopts = "-q --cov=adaptive_core --cov-report=term-missing --cov-fail-under=100"
