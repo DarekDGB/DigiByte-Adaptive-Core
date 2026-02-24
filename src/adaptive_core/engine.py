@@ -229,13 +229,13 @@ class AdaptiveEngine:
 
         rising_patterns = []
         for t, recent_count in recent_type_counts.items():
-    total_count = total_type_counts.get(t, 0)
+            total_count = total_type_counts.get(t, 0)
 
-    # Invariant: recent_type_counts is derived from `recent`, which is a slice of `packets`.
-    # Therefore any threat_type `t` seen in `recent` must exist in total_type_counts with count >= 1.
-    # Kept for defensive readability only.
-    if total_count == 0:  # pragma: no cover
-        continue
+            # Invariant: recent_type_counts is derived from `recent`, which is a slice of `packets`.
+            # Therefore any threat_type `t` seen in `recent` must exist in total_type_counts with count >= 1.
+            # Kept for defensive readability only.
+            if total_count == 0:  # pragma: no cover
+                continue
 
             recent_freq = recent_count / float(len(recent))
             overall_freq = total_count / float(total_considered)
