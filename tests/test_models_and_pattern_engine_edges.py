@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import pytest
 
-from adaptive_core.models import ThreatPacketV3
+from adaptive_core.models import ThreatPacket
 from adaptive_core.pattern_engine import PatternEngine
-from adaptive_core.threat_packet import ThreatPacket
 
 
 # -------------------------
@@ -11,7 +12,7 @@ from adaptive_core.threat_packet import ThreatPacket
 
 def test_threat_packet_from_mapping_rejects_invalid_evidence_type() -> None:
     with pytest.raises(ValueError):
-        ThreatPacketV3.from_mapping(
+        ThreatPacket.from_mapping(
             {
                 "packet_id": "p1",
                 "source_layer": "DQSN",
@@ -24,7 +25,7 @@ def test_threat_packet_from_mapping_rejects_invalid_evidence_type() -> None:
 
 def test_threat_packet_from_mapping_rejects_invalid_meta_type() -> None:
     with pytest.raises(ValueError):
-        ThreatPacketV3.from_mapping(
+        ThreatPacket.from_mapping(
             {
                 "packet_id": "p2",
                 "source_layer": "DQSN",
