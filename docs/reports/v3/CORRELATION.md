@@ -1,51 +1,103 @@
-# CORRELATION (v3)
+# Adaptive Core v3 --- Correlation Model
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Deterministic correlation layer (contract-aligned)
 
-Correlation groups related events into an incident-level view.
+The Correlation layer derives structured relationships between
+validated, canonicalized observations within the bounded Evidence Store.
 
-Implementation: `adaptive_core.v3.correlation`
+It is deterministic, explainable, and advisory-only.
 
-Correlation is **off by default** unless explicitly enabled in a pipeline context,
-because:
+------------------------------------------------------------------------
 
-- incorrect correlation can create false narratives
-- correlation often requires assumptions about time windows and identifiers
-- strict determinism is easier when correlation is an explicit input/output step
+## 1. Purpose
 
----
+Correlation exists to:
 
-## Inputs
+-   Detect structured relationships between signals
+-   Identify co-occurrence patterns
+-   Support drift and anomaly indicators
+-   Provide explainable context for findings
 
-Correlation operates on canonicalized v3 events:
+It does not introduce probabilistic or black-box inference.
 
-- `correlation_id` is required in `ObservedEventV3`
-- events may also carry `reason_id` and `meta` keys
+------------------------------------------------------------------------
 
----
+## 2. Determinism Requirements
 
-## Outputs
+Correlation MUST:
 
-Correlation yields deterministic groupings, e.g.:
+-   Operate only on canonicalized inputs
+-   Use stable ordering (no set-order nondeterminism)
+-   Avoid randomness
+-   Avoid time-based branching
+-   Produce identical outputs for identical Evidence Store states
 
-- groups keyed by `correlation_id`
-- group statistics (counts, max severity, involved layers)
+All correlation outputs must be replayable.
 
-Exact output shape is defined in code and is normative.
+------------------------------------------------------------------------
 
----
+## 3. Allowed Operations
 
-## Guardrails
+Deterministic correlation may include:
 
-1. **No implicit merging**: only `correlation_id` groups by default.
-2. **Deterministic ordering**: stable sort/group operations.
-3. **No time guessing**: windows must be explicit if used.
-4. **Fail-closed**: invalid event shapes are rejected earlier (canonicalize step).
+-   Counter co-occurrence checks
+-   Threshold comparisons
+-   Deterministic graph traversal
+-   Stable aggregation of related reason IDs
+-   Explicit drift signal propagation (if contract-defined)
 
----
+All operations must be explainable and reproducible.
 
-## Why off by default (policy)
+------------------------------------------------------------------------
 
-- Many upstream producers (older layers) may generate low-quality or inconsistent correlation IDs.
-- For security, itâs safer to emit **uncorrelated evidence** than to overfit.
-- Humans can enable correlation for review workflows once upstream quality is confirmed.
+## 4. Forbidden Behavior
+
+Correlation MUST NOT:
+
+-   Introduce heuristic guessing
+-   Use machine learning models
+-   Modify Evidence Store state
+-   Mutate external systems
+-   Generate findings without traceable evidence references
+
+All correlation outputs must reference explicit evidence entries.
+
+------------------------------------------------------------------------
+
+## 5. Output Structure
+
+Correlation outputs feed into the Findings layer and may include:
+
+-   Related observation groups
+-   Correlated reason IDs
+-   Drift signal markers
+-   Confidence contribution inputs
+
+Correlation never produces final advisory output directly.
+
+------------------------------------------------------------------------
+
+## 6. Failure Model
+
+Correlation MUST fail-closed when:
+
+-   Evidence references are missing
+-   Canonicalization assumptions are violated
+-   Guardrail references are invalid
+-   Threshold definitions are malformed
+
+Failures must return explicit reason IDs.
+
+------------------------------------------------------------------------
+
+## 7. Scope Boundaries
+
+Correlation is not:
+
+-   A predictive engine
+-   A governance authority
+-   A risk scoring black box
+-   A consensus modifier
+
+It is a deterministic relational analysis component only.
