@@ -1,60 +1,100 @@
-# DRIFT_RADAR (v3)
+# Adaptive Core v3 --- Drift Radar
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Deterministic drift indicator model (contract-aligned)
 
-Drift Radar detects **contract drift** between:
-- expected layer contracts (explicit inputs)
-- observed patterns / evidence (from the v3 pipeline context)
+Drift Radar is a deterministic model for detecting contract-defined
+drift in shield signals and system behavior over a bounded evidence
+window.
 
-Implementation:
-- `adaptive_core.v3.drift`
-- optional graph output: `adaptive_core.v3.graph`
+It produces advisory drift indicators only.
 
-Drift Radar is **opt-in**: no contracts → no drift analysis.
+------------------------------------------------------------------------
 
----
+## 1. Purpose
 
-## Inputs
+Drift Radar exists to:
 
-- `drift_contracts: list[LayerContract] | None`
-- `include_drift_graph: bool`
+-   Detect deviations from expected behavior
+-   Highlight sustained signal shifts
+-   Support human-reviewed upgrade decisions
+-   Provide explainable drift findings
 
-Contracts are explicit, versioned expectations for target layers.
+Drift Radar does not autonomously remediate or upgrade anything.
 
----
+------------------------------------------------------------------------
 
-## Outputs
+## 2. Determinism Requirements
 
-When enabled, Drift Radar contributes deterministic findings to the report, e.g.:
+Drift Radar MUST:
 
-- missing expected signals
-- incompatible schema changes
-- unexpected behavior indicators
-- contract version mismatches
+-   operate on canonicalized inputs only
+-   use bounded evidence window state
+-   avoid time-based branching (no wall-clock time dependencies)
+-   avoid randomness
+-   produce identical outputs for identical inputs
 
-When `include_drift_graph=True`, the report may include a DOT graph string that
-represents contract relationships or drift edges.
+------------------------------------------------------------------------
 
----
+## 3. Drift Requires a Contract
 
-## Guardrails
+Drift indicators MUST NOT be guessed.
 
-1. **Explicit contracts only**: Drift Radar must not infer contracts from thin air.
-2. **Deterministic**: drift results must be stable for the same inputs.
-3. **Fail-closed for malformed contracts**: invalid contract objects must raise.
-4. **No auto-remediation**: drift is reporting only.
+Drift detection MUST be anchored to one or more explicit contracts, such
+as:
 
----
+-   expected ranges / thresholds
+-   allowed variance bands
+-   expected correlation relationships
+-   explicit invariants defined in CONTRACT.md or policy documents
 
-## Recommended usage
+If no contract exists, the Drift Radar may only report raw trend
+summaries, not drift findings.
 
-- Provide drift contracts for layers you intend to upgrade.
-- Turn on `include_drift_graph` only for human review workflows (DOT can be large).
-- Store drift graphs as review artifacts (PR attachments), not as runtime requirements.
+------------------------------------------------------------------------
 
----
+## 4. Drift Signal Types (Advisory)
 
-## Future evolution
+Allowed deterministic drift indicators include:
 
-- Contract schemas may expand, but must remain strict and versioned.
-- Any new drift reason IDs must be added to `ReasonId` and tested.
+-   sustained threshold breaches (over N observations)
+-   monotonic trend persistence (over bounded window)
+-   correlation structure changes (contract-defined)
+-   unexpected distribution skew (deterministic buckets)
+
+All drift indicators must reference evidence and reason IDs.
+
+------------------------------------------------------------------------
+
+## 5. Output Shape
+
+A drift indicator SHOULD include:
+
+-   reason_id (stable)
+-   severity
+-   description
+-   evidence_refs
+-   window_summary
+-   contract_ref (the rule/invariant that was violated)
+
+------------------------------------------------------------------------
+
+## 6. Failure Model
+
+Drift Radar MUST fail-closed when:
+
+-   contract references are missing/invalid (for drift findings)
+-   evidence window state is inconsistent
+-   canonicalization assumptions are violated
+
+------------------------------------------------------------------------
+
+## 7. Authority Boundaries
+
+Drift Radar is not:
+
+-   an autonomous anomaly response system
+-   a governance authority
+-   a predictive ML model
+
+It is a deterministic advisory layer only.
