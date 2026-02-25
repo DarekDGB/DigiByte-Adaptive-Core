@@ -1,102 +1,133 @@
-# Security Policy — Adaptive Core v3
+# Adaptive Core v3 --- Security Policy
 
-## Scope
+**Version:** v3.0.0\
+**Status:** Deterministic, fail-closed advisory system
 
-This repository implements **Adaptive Core v3**, the **read-only Upgrade Oracle**
-of the DigiByte Quantum Shield.
+Adaptive Core v3 is a read-only, deterministic advisory engine. It does
+not execute transactions, hold keys, or modify external systems.
 
-Adaptive Core v3:
-- observes canonicalized security signals
-- aggregates deterministic evidence
-- produces advisory findings and upgrade reports
+Security posture is defined by:
 
-It does **not**:
-- execute transactions
-- modify wallet or node state
-- hold or manage keys
-- auto-apply upgrades
-- exercise any on-chain or off-chain authority
+-   Deterministic execution
+-   Fail-closed validation
+-   Strict authority boundaries
+-   100% test coverage (CI-enforced)
+-   Human-reviewed governance (PR-only proposals)
 
----
+------------------------------------------------------------------------
 
-## Threat Model
+## 1. Reporting Security Issues
 
-Adaptive Core v3 is designed under the assumption that:
-- all inputs may be malformed or adversarial
-- upstream layers may be compromised
-- downstream consumers may misinterpret output
+If you discover a security vulnerability or boundary violation, please
+report it responsibly:
 
-Core defenses:
-- strict canonicalization (fail-closed)
-- deterministic processing only
-- bounded memory and windows
-- no silent defaults
-- explicit reason codes for all rejections
+Email: **adamantinewalletos@gmail.com**
 
----
+Please include:
 
-## In-Scope Issues
+-   Description of the issue
+-   Steps to reproduce
+-   Affected version (e.g., v3.0.0)
+-   Proof-of-concept (if applicable)
+-   Expected vs actual behavior
 
-We consider the following **in scope** for security review:
+Do NOT open a public issue for critical vulnerabilities.
 
-- Canonicalization bypasses
-- Non-deterministic behavior
-- State leakage across runs
-- Counter overflow or underflow
-- Incorrect rejection / acceptance of malformed input
-- Violations of documented authority boundaries
-- Any path that could lead to implicit execution authority
+------------------------------------------------------------------------
 
----
+## 2. Scope of Security Model
 
-## Out-of-Scope Issues
+Adaptive Core v3 enforces:
 
-The following are **out of scope** by design:
+-   Strict schema validation (fail-closed)
+-   Deterministic canonicalization
+-   Stable integrity hashing
+-   Guardrail registry validation
+-   Reason ID registry locking
+-   Proposal schema validation (PR-only governance)
 
-- UI / UX issues
-- Performance tuning
-- Denial-of-service outside defined bounds
-- Upstream signal correctness
-- Downstream consumer misuse
-- Cryptographic primitive selection (handled by other layers)
+It does NOT:
 
----
+-   Hold private keys
+-   Sign transactions
+-   Modify wallet or node state
+-   Auto-apply upgrades
+-   Provide hidden authority
 
-## Reporting a Vulnerability
+------------------------------------------------------------------------
 
-If you discover a security issue:
+## 3. Deterministic Security Guarantees
 
-1. **Do not open a public issue**
-2. Contact the maintainer privately via GitHub
-3. Provide:
-   - minimal reproduction
-   - expected vs actual behavior
-   - affected version / commit
+Security relies on:
 
-All valid reports will be:
-- acknowledged
-- reproduced
-- fixed with a regression test
-- documented in commit history
+-   No randomness
+-   No time-based logic
+-   No environment-dependent branching
+-   Stable canonical JSON hashing
+-   Regression-locked contract behavior
 
----
+Any nondeterministic behavior is treated as a defect.
 
-## Fix Policy
+------------------------------------------------------------------------
 
-- No security fix without a test
-- No silent behavior change
-- No backward-incompatible change without version bump
-- Determinism is non-negotiable
+## 4. Upgrade Governance Security
 
----
+Upgrade proposals must:
 
-## Governance
+-   Conform to `proposals/schema/upgrade_proposal_v3.schema.json`
+-   Be submitted via Pull Request
+-   Pass strict validation (unknown fields rejected)
+-   Reference valid guardrail and reason IDs
+-   Undergo explicit human review
 
-Adaptive Core v3 is governed by:
-- documented contracts
-- enforced guardrails
-- test coverage thresholds
-- explicit authority boundaries
+Adaptive Core never auto-merges or auto-applies upgrades.
 
-If code, tests, and documentation disagree:
-**tests and contracts win**.
+------------------------------------------------------------------------
+
+## 5. Severity Guidelines
+
+Critical (Severity 1):
+
+-   Boundary violation (execution authority introduced)
+-   Hidden authority path
+-   Nondeterministic behavior affecting outputs
+-   Schema bypass
+
+High:
+
+-   Integrity hash mismatch
+-   Guardrail registry inconsistency
+-   Proposal validation bypass
+
+Medium:
+
+-   Documentation-contract mismatch
+-   Missing fail-closed validation path
+
+------------------------------------------------------------------------
+
+## 6. Disclosure Policy
+
+Responsible disclosure is expected.
+
+We aim to:
+
+-   Acknowledge receipt within reasonable time
+-   Provide remediation timeline where possible
+-   Release patch with regression tests
+-   Update documentation and contract if required
+
+------------------------------------------------------------------------
+
+## 7. Version Discipline
+
+This security policy corresponds to v3.0.0.
+
+Changes to:
+
+-   Validation logic
+-   Canonicalization rules
+-   Report structure
+-   Proposal schema
+
+require documentation update and regression test coverage.
