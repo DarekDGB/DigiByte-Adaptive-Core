@@ -1,76 +1,103 @@
-# EVIDENCE_STORE (v3)
+# Adaptive Core v3 --- Evidence Store
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Deterministic bounded evidence window (contract-aligned)
 
-This document defines the **v3 Evidence Store**:
+The Evidence Store is a deterministic, bounded, replayable structure
+used by Adaptive Core v3 to accumulate signal counts and contextual
+metrics.
 
-- a deterministic, bounded, in-memory hot-window store
-- maintained counters for evidence aggregation
-- no persistence by default (persistence is an explicit future step)
+It exists to support advisory findings --- not autonomous action.
 
-Implementation: `adaptive_core.v3.evidence_store.EvidenceStoreV3`
+------------------------------------------------------------------------
 
----
+## 1. Purpose
 
-## Invariants
+The Evidence Store:
 
-1. **Bounded memory**: window size is capped by `max_events`.
-2. **Deterministic counters**: derived only from canonicalized events.
-3. **Stable eviction**: FIFO eviction (oldest first) when full.
-4. **No hidden persistence**: no disk I/O unless explicitly added in a future version.
-5. **Fail-fast construction**: `max_events <= 0` raises.
+-   Aggregates validated v3 observations
+-   Maintains bounded counters (hot-window semantics)
+-   Supports deterministic replay
+-   Prevents unbounded growth or hidden state
 
----
+It MUST remain memory-safe and bounded.
 
-## Data model
+------------------------------------------------------------------------
 
-The store holds a deque of `CanonicalizeResult` entries, where each entry contains:
+## 2. Determinism Rules
 
-- `event: ObservedEventV3`
-- `context_hash: str` (deterministic hash of the canonical event dict)
+The Evidence Store MUST:
 
-### Snapshot format
+-   Produce identical internal state for identical ordered inputs
+-   Avoid random sampling
+-   Avoid time-based logic
+-   Avoid environment-dependent branching
+-   Maintain stable iteration ordering
 
-`EvidenceSnapshot` contains deterministic counters:
+Inputs must be canonicalized before insertion.
 
-- `total_events`
-- `by_source_layer`
-- `by_event_type`
-- `by_upstream_reason_id` (counts of `reason_id` when provided)
+------------------------------------------------------------------------
 
----
+## 3. Bounded Window Semantics
 
-## Counter semantics
+The store uses a bounded hot-window model:
 
-Counters increment on `add(item)`:
+-   Only recent observations (within defined window constraints) are
+    retained
+-   Window bounds are deterministic
+-   Overflow conditions MUST trigger explicit reason identifiers
+-   Old entries are pruned deterministically
 
-- `by_source_layer[event.source_layer] += 1`
-- `by_event_type[event.event_type] += 1`
-- `by_upstream_reason_id[event.reason_id] += 1` **only if reason_id is present**
+No implicit eviction policies are allowed.
 
-On eviction, counters decrement, and keys with `<= 0` are removed.
+------------------------------------------------------------------------
 
----
+## 4. Failure Model
 
-## Deterministic ordering
+The Evidence Store MUST fail-closed when:
 
-- The hot-window iterates in **deque order**: oldest â newest.
-- Snapshot dicts do not guarantee ordering (Python preserves insertion order, but consumers must not rely on it).
-- Report renderers must sort keys if they need stable visual ordering.
+-   Input schema is invalid
+-   Canonicalization fails
+-   Window bounds are exceeded unexpectedly
+-   Correlation inputs are malformed
 
----
+Failures must return explicit reason IDs.
 
-## Failure modes
+------------------------------------------------------------------------
 
-- Adding an item assumes the item is already canonicalized. Any canonicalization failures must happen earlier.
-- Negative or zero `max_events` is rejected at init time.
+## 5. Interaction with Findings
 
----
+Findings derive from:
 
-## Future evolution (explicit)
+-   Aggregated counters
+-   Correlation outputs
+-   Drift indicators (if explicit contracts exist)
 
-Persistence and archival must be added as an opt-in layer with explicit guardrails:
+The Evidence Store never produces findings directly --- it only supplies
+structured inputs to the analysis layer.
 
-- no implicit disk reads/writes
-- no silent truncation beyond documented max size
-- deterministic replay ordering (if replay is supported)
+------------------------------------------------------------------------
+
+## 6. Integration with Reports
+
+Report artifacts may include:
+
+-   Evidence summaries
+-   Counter snapshots
+-   Window metrics
+
+All summaries must be deterministic projections of the Evidence Store
+state.
+
+------------------------------------------------------------------------
+
+## 7. Out of Scope
+
+The Evidence Store is not:
+
+-   A persistent database
+-   A distributed consensus store
+-   A logging system
+-   A governance engine
+
+It is a deterministic in-memory advisory component only.
