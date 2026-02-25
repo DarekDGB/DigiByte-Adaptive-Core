@@ -1,80 +1,101 @@
-# Adaptive Core v3 — Reason IDs (Normative)
+# Adaptive Core v3 --- Reason IDs
 
-**Status:** Normative  
-**Scope:** authoritative meaning and usage rules for v3 reason IDs.
+**Version:** v3.0.0\
+**Status:** Stable identifier registry (contract-aligned)
 
-This document is **normative**. If code or any other documentation conflicts with this file, **this file wins**.
+Reason IDs are stable machine identifiers used to explain why a finding,
+denial, or advisory output occurred.
 
----
+Reason IDs exist to enforce:
 
-## 1. Purpose
+-   determinism
+-   explainability
+-   auditability
+-   upgrade governance discipline
 
-Reason IDs exist to make failures and decisions:
-- deterministic
-- auditable
-- machine-readable
-- consistent across modules
+Unknown reason IDs MUST fail-closed.
 
-Reason IDs are used in:
-- raised errors (exceptions)
-- findings
-- reports
-- validation messages
+------------------------------------------------------------------------
 
----
+## 1. Rules
 
-## 2. Source of Truth
+-   Reason IDs are strings with stable formatting.
+-   Reason IDs are never guessed or inferred.
+-   Any new reason ID requires:
+    -   doc update here
+    -   deterministic regression test coverage
+    -   contract review for semantic impact
 
-The single source of truth is:
+------------------------------------------------------------------------
 
-- `adaptive_core.v3.reason_ids.ReasonId`
+## 2. Structure
 
-All reason ID string values MUST be referenced from this enum.  
-Do not inline reason ID strings elsewhere.
+Recommended pattern:
 
----
+ACV3\_`<DOMAIN>`{=html}\_`<DETAIL>`{=html}
 
-## 3. Fail-Closed Rules
+Examples:
 
-- Unknown reason ID strings MUST NOT be accepted.
-- Unknown guardrail IDs MUST be rejected (separate registry enforcement).
+-   ACV3_SCHEMA_INVALID
+-   ACV3_CANONICALIZE_FAILED
+-   ACV3_GUARDRAIL_UNKNOWN
+-   ACV3_INTEGRITY_MISMATCH
+-   ACV3_EVIDENCE_WINDOW_OVERFLOW
 
-When raising `ValueError` for validation failures, the error message MUST include the reason ID prefix.
+------------------------------------------------------------------------
 
-Example pattern:
-- `"{ReasonId.AC_V3_MISSING_FIELD.value}: missing 'timestamp'"`
+## 3. Registry (v3.0.0)
 
----
+### Input / Validation
 
-## 4. Category Overview
+-   ACV3_SCHEMA_INVALID --- input fails strict schema validation
+-   ACV3_CANONICALIZE_FAILED --- canonicalization could not be performed
+-   ACV3_UNKNOWN_FIELD --- input contains unknown/forbidden fields
+-   ACV3_GUARDRAIL_UNKNOWN --- referenced guardrail ID not found in
+    registry
+-   ACV3_REASON_ID_UNKNOWN --- referenced reason ID not known/stable
 
-Below is the intended meaning of key reason IDs (non-exhaustive; enum defines full set).
+### Evidence / Analysis
 
-### 4.1 Input Shape / Schema
-- `AC_V3_INVALID_EVENT` — raw input not a mapping or structurally invalid.
-- `AC_V3_MISSING_FIELD` — required field missing.
-- `AC_V3_TYPE_INVALID` — field present but type invalid or empty where non-empty required.
-- `AC_V3_NON_CANONICAL` — value parseable but violates canonical rules.
-- `AC_V3_TIMESTAMP_INVALID` — timestamp not ISO8601 or missing trailing `Z`.
+-   ACV3_EVIDENCE_WINDOW_OVERFLOW --- evidence window bounds exceeded
+-   ACV3_EVIDENCE_INVALID --- evidence payload failed validation
+    constraints
+-   ACV3_CORRELATION_INVALID --- correlation computation failed
+    determinism rules
+-   ACV3_DRIFT_SIGNAL --- drift indicator triggered (when drift
+    contracts exist)
 
-### 4.2 Metadata
-- `AC_V3_META_INVALID` — meta is not a dict, or contains non-string keys.
+### Reporting / Integrity
 
-### 4.3 Reporting
-- `AC_V3_REPORT_INVALID` — canonical JSON missing/invalid, invalid signature status, or report shape invalid.
+-   ACV3_REPORT_BUILD_FAILED --- report builder failed deterministically
+-   ACV3_CONTEXT_HASH_FAILED --- context hash could not be computed
+-   ACV3_INTEGRITY_MISMATCH --- integrity envelope mismatch detected
 
----
+### Proposals
 
-## 5. Logging & Redaction
+-   ACV3_PROPOSAL_SCHEMA_INVALID --- proposal fails schema validation
+-   ACV3_PROPOSAL_FORBIDDEN_CHANGE --- proposal violates guardrails /
+    authority bounds
+-   ACV3_PROPOSAL_MISSING_EVIDENCE --- proposal lacks required
+    supporting evidence refs
 
-Reason IDs MUST NOT leak secrets.
+------------------------------------------------------------------------
 
-- Reason IDs are safe to log.
-- Error messages must not include private key material, mnemonics, or PII.
-- For user-facing logs, include reason ID but keep details minimal.
+## 4. Proposals Linkage
 
----
+Upgrade proposals MUST reference reason IDs from this registry.\
+Proposal schema: proposals/schema/upgrade_proposal_v3.schema.json
 
-## 6. Compatibility Note
+Unknown reason IDs in proposals MUST fail-closed.
 
-Reason IDs are part of the v3 contract. Changes that rename, remove, or reinterpret a reason ID are contract-breaking unless versioned explicitly.
+------------------------------------------------------------------------
+
+## 5. Version Discipline
+
+This registry corresponds to v3.0.0.
+
+Any additions or semantic changes require:
+
+-   contract review (CONTRACT.md)
+-   deterministic tests
+-   documentation update here
