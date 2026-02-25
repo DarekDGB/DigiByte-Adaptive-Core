@@ -1,55 +1,86 @@
-# Adaptive Core — Documentation Index
+# Adaptive Core --- Reports Documentation Index
 
-This repository contains **two parallel lines**:
+**Version:** v3.0.0\
+**Status:** Documentation set aligned with contract + implementation
 
-- **v2 (Legacy Learning Engine):** historical adaptive/learning engine and immune report logic.
-- **v3 (Upgrade Oracle):** deterministic, fail-closed **reporting/oracle** that produces human-reviewed upgrade reports.
-  - **No execution authority**
-  - **No keys**
-  - **No silent fallback**
+This index covers the Adaptive Core reporting and governance
+documentation.
 
----
+If documentation diverges from implementation, **code + CONTRACT.md
+wins**.
 
-## v3 Documentation (Current)
+------------------------------------------------------------------------
 
-Start here:
+# v3 Documentation Set
 
-- [v3 Overview](v3/README.md)
-- [v3 Guardrails Registry](v3/GUARDRAILS.md)
+All v3 normative documentation lives under:
 
-Planned / to be added next (in order):
+docs/reports/v3/
 
-- `v3/AUTHORITY_BOUNDARIES.md`
-- `v3/CONTRACT.md`
-- `v3/REASON_IDS.md`
-- `v3/REPORT_FORMAT.md`
-- `v3/EVIDENCE_STORE.md`
-- `v3/CONFIDENCE_MODEL.md`
-- `v3/DRIFT_RADAR.md`
-- `v3/NODE_SUMMARY.md`
-- `v3/CORRELATION.md`
-- `v3/PIPELINE_USAGE.md`
+Core documents:
 
----
+-   README.md --- v3 overview
+-   CONTRACT.md --- normative behavior contract (authoritative)
+-   AUTHORITY_BOUNDARIES.md --- hard authority limits
+-   GUARDRAILS.md --- enforced guardrails registry
+-   SECURITY.md --- security posture & disclosure policy
 
-## v2 Documentation (Legacy)
+Deterministic Logic:
 
-Start here:
+-   EVIDENCE_STORE.md --- bounded evidence window model
+-   CORRELATION.md --- deterministic correlation model
+-   DRIFT_RADAR.md --- contract-defined drift detection
+-   CONFIDENCE_MODEL.md --- deterministic confidence scoring
+-   REASON_IDS.md --- stable reason ID registry
 
-- [v2 Overview](v2/README.md)
-- v2 report docs:
-  - `v2/reports/immune-report-schema.md`
-  - `v2/reports/qri-scoring.md`
-  - `v2/reports/reinforcement-learning-rules.md`
+Reporting & Flow:
 
----
+-   REPORT_FORMAT.md --- canonical JSON + Markdown structure
+-   PIPELINE_USAGE.md --- deterministic invocation guarantees
+-   NODE_SUMMARY.md --- privacy-preserving cross-node aggregation
 
-## Scope truth
+------------------------------------------------------------------------
 
-If any future docs conflict with **code** for v3, then:
+# Governance & Upgrade Flow
 
-1. **Tests/contracts win**
-2. Then **code**
-3. Then docs
+Structured upgrade proposals live at repository root:
 
-Docs must never invent authority that the code does not have.
+proposals/
+
+Governance model:
+
+-   Schema-validated proposals only
+-   Pull Request submission required
+-   Human-reviewed approval required
+-   No auto-upgrades
+-   Fail-closed validation model
+
+Adaptive Core acts as:
+
+-   Mailbox
+-   Validator
+-   Reporter
+
+It never executes changes.
+
+------------------------------------------------------------------------
+
+# Version Discipline
+
+This documentation set corresponds to:
+
+Adaptive Core v3.0.0
+
+Any change affecting:
+
+-   validation logic
+-   canonicalization rules
+-   hashing inputs
+-   report structure
+-   proposal schema
+
+requires:
+
+-   documentation update
+-   regression test coverage
+-   contract review
