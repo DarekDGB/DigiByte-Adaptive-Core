@@ -1,51 +1,106 @@
-# NODE_SUMMARY (v3)
+# Adaptive Core v3 --- Node Summary
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Privacy-preserving deterministic aggregation
+(contract-aligned)
 
-This document defines the **privacy-preserving cross-node summary** event used by v3.
+Node Summary defines how Adaptive Core v3 may aggregate advisory signals
+across multiple nodes without violating authority boundaries or privacy
+guarantees.
 
-Implementation: `adaptive_core.v3.node_summary`
+Node Summary is advisory-only.
 
-The goal is to enable network-level aggregation without leaking raw telemetry.
+------------------------------------------------------------------------
 
----
+## 1. Purpose
 
-## Event: NodeSummaryEventV3
+Node Summary exists to:
 
-Fields:
+-   Aggregate deterministic findings across nodes
+-   Detect cross-node pattern consistency
+-   Provide ecosystem-level advisory visibility
+-   Support human-reviewed upgrade decisions
 
-- `node_id: str` — pseudonymous identifier (no IPs, no secrets)
-- `window_start: str` — ISO8601 timestamp, must end with `Z`
-- `window_end: str` — ISO8601 timestamp, must end with `Z`
-- `total_events: int` — aggregated count, must be >= 0
-- `by_upstream_reason_id: dict[str, int]` — aggregated counts by reason id, values >= 0
+It does not alter node state or network consensus.
 
----
+------------------------------------------------------------------------
 
-## Canonicalization
+## 2. Determinism Requirements
 
-Function: `canonicalize_node_summary(raw: Mapping[str, Any]) -> (NodeSummaryEventV3, context_hash)`
+Node Summary MUST:
 
-Rules:
+-   Operate only on canonicalized report artifacts
+-   Use stable ordering for aggregation
+-   Avoid randomness
+-   Avoid time-based branching
+-   Produce identical outputs for identical input report sets
 
-- Missing required fields → `AC_V3_MISSING_FIELD`
-- Type mismatch → `AC_V3_TYPE_INVALID`
-- Timestamp missing trailing `Z` or invalid ISO → `AC_V3_TIMESTAMP_INVALID`
-- Negative counters → `AC_V3_NON_CANONICAL`
+Cross-node summaries must be replayable.
 
-The `context_hash` is computed from the canonical dict of the event.
+------------------------------------------------------------------------
 
----
+## 3. Privacy Guarantees
 
-## Privacy properties
+Node Summary MUST:
 
-- No raw events included.
-- No packet payloads.
-- Aggregation only.
+-   Avoid storing raw sensitive data
+-   Avoid exposing private node metadata
+-   Aggregate using minimal necessary signal references
+-   Preserve anonymity where applicable
 
----
+Only deterministic, contract-defined fields may be aggregated.
 
-## Integration notes
+------------------------------------------------------------------------
 
-Node summaries are designed to be consumed by an aggregation layer (e.g., DQSN) and/or
-used as part of broader evidence evaluation in Adaptive Core workflows.
+## 4. Allowed Aggregation
+
+Deterministic aggregation may include:
+
+-   Count of identical reason IDs across nodes
+-   Drift signal frequency distribution
+-   Confidence score distribution buckets
+-   Guardrail reference frequency
+-   Stable correlation overlap metrics
+
+No probabilistic or heuristic clustering is allowed.
+
+------------------------------------------------------------------------
+
+## 5. Output Shape
+
+A node summary SHOULD include:
+
+-   aggregated_reason_counts
+-   drift_frequency_summary
+-   confidence_distribution
+-   guardrail_reference_counts
+-   integrity_hash_of_input_set
+
+The integrity hash must be computed over canonicalized input reports
+only.
+
+------------------------------------------------------------------------
+
+## 6. Failure Model
+
+Node Summary MUST fail-closed when:
+
+-   Input report schema is invalid
+-   Integrity hashes mismatch
+-   Canonicalization assumptions are violated
+-   Unknown reason IDs or guardrails appear
+
+Failures must return explicit reason IDs.
+
+------------------------------------------------------------------------
+
+## 7. Authority Boundary
+
+Node Summary is not:
+
+-   A coordination layer
+-   A voting mechanism
+-   A governance trigger
+-   A consensus modifier
+
+It is a deterministic advisory aggregation component only.
