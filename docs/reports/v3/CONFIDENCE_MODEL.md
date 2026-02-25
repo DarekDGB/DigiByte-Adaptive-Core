@@ -1,63 +1,102 @@
-# CONFIDENCE_MODEL (v3)
+# Adaptive Core v3 --- Confidence Model
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Deterministic confidence scoring (contract-aligned)
 
-This document describes how Adaptive Core v3 computes a **confidence score** and
-applies a **confidence threshold** for upgrade recommendations.
+The Confidence Model produces a deterministic confidence score that
+accompanies findings and advisory reports.
 
-Implementation: `adaptive_core.v3.confidence`
+It quantifies signal strength --- it does not authorize action.
 
-v3 confidence is **advisory** only:
-- it never executes changes
-- it never upgrades layers automatically
-- it is used to gate report recommendations
+------------------------------------------------------------------------
 
----
+## 1. Purpose
 
-## Inputs
+The Confidence Model exists to:
 
-v3 confidence is derived from:
+-   Quantify strength of accumulated evidence
+-   Reflect correlation density and stability
+-   Provide consistent scoring for human review
+-   Support upgrade proposal justification
 
-- the deterministic evidence snapshot (counts, distribution)
-- findings presence / severity (if applicable)
-- capability flags (what the system claims it can observe)
-- optional drift contracts (when drift analysis is enabled)
+Confidence is advisory context only.
 
-The exact scoring function is defined in code and is normative.
+------------------------------------------------------------------------
 
----
+## 2. Determinism Requirements
 
-## Outputs
+The Confidence Model MUST:
 
-- `confidence_score`: float in **[0.0, 1.0]**
-- `meets_threshold`: boolean, computed as `confidence_score >= confidence_threshold`
+-   Operate only on canonicalized inputs
+-   Use bounded evidence window data
+-   Avoid randomness
+-   Avoid time-based branching
+-   Produce identical scores for identical input state
 
----
+Confidence scoring must be replayable.
 
-## Guardrails
+------------------------------------------------------------------------
 
-1. **No randomness**: confidence must be deterministic for the same inputs.
-2. **Clamped range**: score must remain within [0.0, 1.0].
-3. **Explicit threshold**: threshold must be provided to the pipeline.
-4. **Fail-closed**: missing required inputs (in code paths that require them) must raise with a reason id.
+## 3. Inputs
 
----
+Confidence may incorporate:
 
-## Design intent
+-   Evidence counters
+-   Correlation density
+-   Drift persistence duration
+-   Guardrail impact weighting (contract-defined only)
+-   Finding consistency across window
 
-- Low evidence â low confidence.
-- Consistent evidence from multiple sources â higher confidence.
-- Drift contracts provided and validated â higher confidence (when enabled).
-- Confidence is a signal for humans and downstream systems to prioritize review.
+All inputs must be deterministic projections of the Evidence Store and
+correlation outputs.
 
----
+------------------------------------------------------------------------
 
-## Recommended threshold defaults (policy)
+## 4. Output Format
 
-These are *policy suggestions* (not code authority):
+Confidence output SHOULD include:
 
-- Conservative / high assurance: **0.85 â 0.95**
-- Balanced review pipeline: **0.70 â 0.85**
-- Experimental / lab environment: **0.50 â 0.70**
+-   `score` (numeric, bounded range, e.g., 0.0 -- 1.0)
+-   `level` (e.g., LOW / MEDIUM / HIGH --- deterministic mapping)
+-   `explanation_refs` (evidence + reason_ids contributing to score)
 
-Final thresholds must be set by the consuming project (shield integration).
+Confidence must never introduce hidden weighting logic.
+
+------------------------------------------------------------------------
+
+## 5. Forbidden Behavior
+
+The Confidence Model MUST NOT:
+
+-   Use machine learning
+-   Use probabilistic estimation
+-   Modify findings
+-   Override guardrails
+-   Imply authority or enforcement
+
+Confidence reflects signal clarity, not governance power.
+
+------------------------------------------------------------------------
+
+## 6. Failure Model
+
+Confidence scoring MUST fail-closed when:
+
+-   Required inputs are missing
+-   Evidence window state is inconsistent
+-   Correlation outputs are invalid
+-   Guardrail references are unknown
+
+Failures must return explicit reason IDs.
+
+------------------------------------------------------------------------
+
+## 7. Authority Boundary
+
+Confidence is:
+
+-   Not an approval engine
+-   Not an execution trigger
+-   Not an automatic upgrade threshold
+
+It is a deterministic advisory metric only.
