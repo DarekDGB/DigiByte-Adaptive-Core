@@ -1,98 +1,116 @@
-# REPORT_FORMAT (v3)
+# Adaptive Core v3 --- Report Format
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Canonical report structure (contract-aligned)
 
-This document defines the **normative** output formats produced by **Adaptive Core v3**:
+This document defines the deterministic structure of Adaptive Core v3
+reports.
 
-- Canonical JSON (stable renderer)
-- Markdown (stable renderer)
-- Integrity envelope (hash + signature status)
+If report structure changes in a way that affects field presence,
+ordering, hashing inputs, or semantics, that is a contract change and
+must be versioned.
 
-**Non-goals:** execution authority, automatic patching, key custody, hidden defaults.
+------------------------------------------------------------------------
 
----
+## 1. Report Artifacts
 
-## Artifacts produced by the v3 pipeline
+Adaptive Core v3 produces two synchronized artifacts:
 
-`adaptive_core.v3.pipeline.run_v3_pipeline(...)` returns:
+1.  Canonical JSON report (machine-readable, hashing source)
+2.  Markdown report (human-readable rendering of same content)
 
-1. `UpgradeReportV3` (structured object)
-2. `canonical_json: str` (stable JSON rendering of the report)
-3. `markdown: str` (stable Markdown rendering of the report)
-4. `ReportEnvelopeV3` (hash + signature status)
+Both must represent identical semantic content.
 
----
+------------------------------------------------------------------------
 
-## Canonical JSON (normative)
+## 2. Canonical JSON Structure (High-Level)
 
-### Requirements
+The canonical report JSON includes:
 
-The canonical JSON string MUST be:
+-   version --- report contract version (v3)
+-   observations_summary --- deterministic summary of processed inputs
+-   evidence_window --- bounded counters and metrics
+-   findings --- array of structured findings
+-   confidence --- deterministic confidence model output
+-   guardrails --- referenced guardrail IDs
+-   reason_ids --- referenced reason identifiers
+-   metadata
+    -   pipeline_version
+-   integrity
+    -   context_hash (computed over canonical JSON)
+    -   signature_status (present/absent/invalid)
 
-- **Deterministic** for the same report input
-- **Stable key ordering**
-- **No random fields**
-- **No timestamps injected by renderer**
-- **UTF-8**
+Field ordering must be stable after canonicalization.
 
-The canonical JSON is what is hashed for integrity in `ReportEnvelopeV3`.
+------------------------------------------------------------------------
 
-### Top-level structure (high-level)
+## 3. Findings Structure
 
-The report JSON represents an `UpgradeReportV3` object containing (at minimum):
+Each finding MUST include:
 
-- `report_id`
-- `target_layers`
-- `capabilities`
-- `confidence`
-- `evidence_snapshot`
-- `findings`
-- `guardrails`
-- `notes` / `metadata` (if present)
+-   reason_id (stable registry reference)
+-   severity
+-   description
+-   evidence_refs
+-   guardrail_refs
 
-Exact fields are defined by the `UpgradeReportV3` model in code.
+Unknown reason IDs or guardrail IDs MUST fail-closed.
 
----
+------------------------------------------------------------------------
 
-## Markdown (normative)
+## 4. Deterministic Rendering (Markdown)
 
-The Markdown renderer is a **presentation format** of the same report content.
+The Markdown report:
 
-### Requirements
+-   Mirrors the canonical JSON content
+-   Preserves stable section ordering
+-   Avoids non-deterministic formatting artifacts
+-   Must not introduce new semantic data not present in JSON
 
-- Deterministic ordering of sections
-- No embedded secrets
-- No execution instructions (it is advisory)
-- Must include key summary signals:
-  - report_id
-  - target_layers
-  - confidence score (and threshold outcome)
-  - evidence counters (snapshot)
-  - findings list (with reason_ids)
-  - guardrails referenced
+Markdown is a presentation layer only.
 
----
+------------------------------------------------------------------------
 
-## Envelope format (normative)
+## 5. Integrity Envelope
 
-`ReportEnvelopeV3` provides a minimal, integrity-only envelope.
+The integrity envelope includes:
 
-### Fields
+-   context_hash
+    -   Deterministically computed from canonical JSON
+-   signature_status
+    -   Explicit status only (no implied authority)
 
-- `report_hash`: SHA-256 hex digest of the canonical JSON string
-- `canonical_json`: the full canonical JSON string (included to make the envelope self-contained)
-- `classical_signature`: one of `ABSENT | PRESENT | UNSUPPORTED`
-- `pqc_signature`: one of `ABSENT | PRESENT | UNSUPPORTED`
+Hash input MUST be canonicalized JSON only.
 
-### Guardrails
+------------------------------------------------------------------------
 
-- **No silent fallback** for signature status
-- Invalid status value MUST raise `AC_V3_REPORT_INVALID`
-- Hash MUST be computed over `canonical_json` exactly as produced
+## 6. Proposals Integration
 
----
+If a report results in a proposed upgrade:
 
-## Compatibility notes
+-   A structured proposal JSON must conform to:
+    proposals/schema/upgrade_proposal_v3.schema.json
+-   Proposal content must reference:
+    -   relevant reason_ids
+    -   relevant guardrails
+    -   supporting evidence summary
+-   Proposal submission occurs via Pull Request only.
 
-- Any **semantic change** to the report structure must follow contract discipline (major bump if breaking).
-- Renderers may evolve visually, but must remain deterministic.
+Adaptive Core never auto-applies report outcomes.
+
+------------------------------------------------------------------------
+
+## 7. Version Discipline
+
+Any change affecting:
+
+-   required fields
+-   hashing inputs
+-   ordering guarantees
+-   findings structure
+
+requires:
+
+-   contract review
+-   deterministic regression tests
+-   documentation update
