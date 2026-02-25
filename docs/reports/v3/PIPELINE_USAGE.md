@@ -1,59 +1,98 @@
-# PIPELINE_USAGE (v3)
+# Adaptive Core v3 --- Pipeline Usage
 
-## Purpose
+**Version:** v3.0.0\
+**Status:** Deterministic, read-only invocation contract
 
-This document explains how to run the **Adaptive Core v3 pipeline** and interpret outputs.
+This document describes how Adaptive Core v3 is invoked and what
+guarantees the execution pipeline provides.
 
-Entry point: `adaptive_core.v3.pipeline.run_v3_pipeline`
+Adaptive Core is a deterministic advisory engine. It is not an executor.
 
----
+------------------------------------------------------------------------
 
-## Inputs
+## 1. High-Level Invocation Model
 
-Required:
+Adaptive Core v3 follows a strict flow:
 
-- `report_id: str`
-- `target_layers: list[str]`
-- `snapshot: EvidenceSnapshot`
-- `confidence_threshold: float`
-- `capabilities: CapabilitiesV3`
+1.  Receive v3-shaped observations (schema-valid).
+2.  Canonicalize input (stable ordering, normalization).
+3.  Process through deterministic evidence window.
+4.  Derive findings (including optional drift signals).
+5.  Build canonical report artifacts (JSON + Markdown).
+6.  Compute integrity envelope (context_hash).
+7.  Return advisory output to caller.
 
-Optional:
+No step mutates external systems.
 
-- `drift_contracts: list[LayerContract] | None`
-- `include_drift_graph: bool`
+------------------------------------------------------------------------
 
----
+## 2. Determinism Guarantees
 
-## Example (conceptual)
+The pipeline MUST:
 
-1. Canonicalize raw observations into `ObservedEventV3` + `context_hash`
-2. Add them to `EvidenceStoreV3`
-3. Take a deterministic `EvidenceSnapshot`
-4. Run the pipeline to build a report + envelope
+-   Reject malformed or ambiguous input (fail-closed).
+-   Avoid random or time-based logic.
+-   Avoid environment-dependent branching.
+-   Maintain stable ordering in JSON artifacts.
+-   Produce identical outputs for identical canonical inputs.
 
----
+Determinism is enforced by tests and coverage gate (100%).
 
-## Outputs
+------------------------------------------------------------------------
 
-- `UpgradeReportV3` — structured report object
-- `canonical_json` — stable renderer output
-- `markdown` — stable renderer output
-- `ReportEnvelopeV3` — integrity envelope with SHA-256 hash and signature status fields
+## 3. Failure Model (Fail-Closed)
 
----
+If any of the following occur:
 
-## Operational guidance
+-   Schema violation
+-   Unknown guardrail ID
+-   Unknown reason ID
+-   Invalid canonicalization state
+-   Integrity mismatch
 
-- Treat reports as **advisory** artifacts for human review.
-- Store canonical JSON as the audit artifact.
-- Store the envelope hash in logs / immutable storage for later verification.
-- Do not enable drift radar unless you provide explicit contracts.
+The pipeline MUST return a structured failure with explicit reason
+identifiers.
 
----
+It must never silently downgrade behavior.
 
-## Failure behavior
+------------------------------------------------------------------------
 
-- Canonicalization failures raise with `ReasonId` codes.
-- Envelope creation fails if canonical_json is missing/invalid or signature status is invalid.
-- No silent defaults beyond what is explicitly documented in each module.
+## 4. Advisory Output Structure
+
+The pipeline returns:
+
+-   findings\[\]
+-   report_json (canonical)
+-   report_markdown (rendered view)
+-   integrity_envelope:
+    -   context_hash
+    -   signature_status
+
+These outputs are advisory and require human review.
+
+------------------------------------------------------------------------
+
+## 5. Integration Model
+
+External systems (e.g., execution boundaries such as AdamantineOS):
+
+-   Call Adaptive Core with strict v3 observations.
+-   Receive advisory output.
+-   Optionally generate structured upgrade proposals.
+-   Submit proposals to the repository `proposals/` mailbox via Pull
+    Request.
+
+Adaptive Core never pushes updates outward.
+
+------------------------------------------------------------------------
+
+## 6. What the Pipeline Is NOT
+
+The pipeline is not:
+
+-   A transaction processor
+-   A consensus engine
+-   An auto-remediation engine
+-   A governance automation system
+
+It is a deterministic intelligence layer only.
