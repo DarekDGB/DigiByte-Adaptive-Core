@@ -171,6 +171,28 @@ def test_proposal_id_with_space_rejected() -> None:
     assert "must not contain spaces" in str(e.value)
 
 
+def test_bad_domain_rejected() -> None:
+    proposal = _valid_proposal()
+    proposal["domain"] = "UI_LOGIC"  # not allowed
+    proposal = _finalize_hash_like_validator(proposal)
+
+    with pytest.raises(ValueError) as e:
+        validate_and_canonicalize_upgrade_proposal(proposal)
+
+    assert "bad domain" in str(e.value)
+
+
+def test_bad_action_rejected() -> None:
+    proposal = _valid_proposal()
+    proposal["action"] = "LOWER_THRESHOLD"  # forbidden/unknown
+    proposal = _finalize_hash_like_validator(proposal)
+
+    with pytest.raises(ValueError) as e:
+        validate_and_canonicalize_upgrade_proposal(proposal)
+
+    assert "bad action" in str(e.value)
+
+
 def test_target_not_object_rejected() -> None:
     proposal = _valid_proposal()
     proposal["target"] = []  # type: ignore[assignment]
@@ -333,6 +355,7 @@ def test_canonicalization_sorts_changes_and_guardrails() -> None:
     res = validate_and_canonicalize_upgrade_proposal(proposal)
     assert res.canonical["guardrails"] == ["AMG-001", "AMG-011"]
     assert [c["change_id"] for c in res.canonical["changes"]] == ["CHG-001", "CHG-002"]
+
 
 def test_guardrails_explicit_none_hits_branch() -> None:
     proposal = _load_template()
