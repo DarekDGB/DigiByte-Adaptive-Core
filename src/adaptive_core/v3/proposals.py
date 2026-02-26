@@ -11,9 +11,27 @@ from .guardrails.registry import load_registry
 from .reason_ids import ReasonId
 
 
+# Domain + action are now first-class, deny-by-default fields.
+_ALLOWED_DOMAINS = {
+    "SECURITY_THRESHOLDS",
+    "DETECTION_RULES",
+    "EVIDENCE_REQUIREMENTS",
+    "ENFORCEMENT",
+}
+
+_ALLOWED_ACTIONS = {
+    "INCREASE_THRESHOLD",
+    "ADD_RULE",
+    "TIGHTEN_EVIDENCE",
+    "STRENGTHEN_ENFORCEMENT",
+}
+
+
 _ALLOWED_ROOT_KEYS = {
     "v",
     "proposal_id",
+    "domain",
+    "action",
     "target",
     "created_utc",
     "summary",
@@ -26,6 +44,9 @@ _ALLOWED_ROOT_KEYS = {
 
 _ALLOWED_TARGET_KEYS = {"component", "version"}
 _ALLOWED_CHANGE_KEYS = {"change_id", "type", "detail"}
+
+# Keep existing allowed change types unless you intentionally want a breaking change.
+# If you want to forbid destructive removals, remove "remove" here AND update schema + tests.
 _ALLOWED_CHANGE_TYPES = {"add", "modify", "deprecate", "remove"}
 
 
@@ -70,15 +91,12 @@ def _repo_root_from_here() -> Path:
 
 
 def _canonical_json_bytes(obj: Any) -> bytes:
-    # Deterministic JSON: sorted keys, no whitespace.
-    # ensure_ascii=False keeps unicode stable; UTF-8 encoding is explicit.
     s = json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return s.encode("utf-8")
 
 
 def compute_proposal_hash(canonical_without_hash: Mapping[str, Any]) -> str:
-    h = hashlib.sha256(_canonical_json_bytes(canonical_without_hash)).hexdigest()
-    return h
+    return hashlib.sha256(_canonical_json_bytes(canonical_without_hash)).hexdigest()
 
 
 def _canonicalize_guardrails(guardrails: Optional[Any], guardrails_ref: Optional[Any]) -> Tuple[List[str], Optional[str]]:
@@ -99,7 +117,6 @@ def _canonicalize_guardrails(guardrails: Optional[Any], guardrails_ref: Optional
             raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: 'guardrails_ref' must be non-empty str")
         ref = guardrails_ref.strip()
 
-    # Deterministic: sort + dedupe
     gids = sorted(set(gids))
     return gids, ref
 
@@ -118,6 +135,15 @@ def validate_and_canonicalize_upgrade_proposal(raw: Mapping[str, Any]) -> Propos
     if " " in proposal_id:
         raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: proposal_id must not contain spaces")
 
+    # New fields (deny-by-default)
+    domain = _require_str(raw, "domain")
+    if domain not in _ALLOWED_DOMAINS:
+        raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: bad domain {domain!r}")
+
+    action = _require_str(raw, "action")
+    if action not in _ALLOWED_ACTIONS:
+        raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: bad action {action!r}")
+
     target = raw.get("target")
     if not isinstance(target, Mapping):
         raise ValueError(f"{ReasonId.AC_V3_TYPE_INVALID.value}: 'target' must be object")
@@ -134,7 +160,6 @@ def validate_and_canonicalize_upgrade_proposal(raw: Mapping[str, Any]) -> Propos
     if not isinstance(changes_any, list) or not changes_any:
         raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: 'changes' must be non-empty list")
 
-    # Canonicalize changes: strict shape + sort by change_id
     changes: List[Dict[str, str]] = []
     seen_change_ids: set[str] = set()
     for item in changes_any:
@@ -159,7 +184,6 @@ def validate_and_canonicalize_upgrade_proposal(raw: Mapping[str, Any]) -> Propos
 
     gids, gref = _canonicalize_guardrails(raw.get("guardrails"), raw.get("guardrails_ref"))
 
-    # Guardrails must exist in registry (66)
     registry = load_registry()
     registry.require_all(gids)
 
@@ -170,6 +194,8 @@ def validate_and_canonicalize_upgrade_proposal(raw: Mapping[str, Any]) -> Propos
     canonical: Dict[str, Any] = {
         "v": v,
         "proposal_id": proposal_id,
+        "domain": domain,
+        "action": action,
         "target": {"component": component, "version": version},
         "created_utc": created_utc,
         "summary": summary,
@@ -180,7 +206,6 @@ def validate_and_canonicalize_upgrade_proposal(raw: Mapping[str, Any]) -> Propos
         "proposal_hash": proposal_hash,
     }
 
-    # Compute hash over canonical WITHOUT proposal_hash
     without_hash = dict(canonical)
     without_hash.pop("proposal_hash", None)
     computed = compute_proposal_hash(without_hash)
