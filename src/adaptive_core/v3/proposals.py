@@ -60,42 +60,93 @@ def build_upgrade_proposal_v3(raw: Mapping[str, Any]) -> Dict[str, Any]:
     """
     Deterministically build + seal an upgrade_proposal_v3.
 
-    - Ensures evidence exists (defaults to {})
-    - guardrails_ref: if missing -> leave missing (None). DO NOT default to "" (validator rejects empty str)
-    - Deterministic guardrails: strip + sort + dedupe
-    - Deterministic changes: sort by change_id
-    - Computes proposal_hash over canonical-without-hash
-    - Fail-closed: validates and returns canonical proposal
+    Critical invariant:
+    - proposal_hash MUST be computed over the same canonical-without-hash shape
+      that validate_and_canonicalize_upgrade_proposal() uses to compute expected hash.
+
+    Canonical-without-hash shape used for hashing:
+    {
+      v, proposal_id, domain, action, target{component,version},
+      created_utc, summary, changes(sorted by change_id),
+      evidence(default {}), guardrails(sorted/deduped), guardrails_ref(default "")
+    }
     """
     if not isinstance(raw, Mapping):
         raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: proposal must be an object")
 
     proposal: Dict[str, Any] = dict(raw)
 
-    # Evidence may be omitted; canonical output will contain {}.
-    # But if caller includes evidence=None, normalize to {} for safety.
-    if "evidence" in proposal and proposal["evidence"] is None:
+    # Evidence canonicalizes to {} when missing/None.
+    if "evidence" not in proposal or proposal["evidence"] is None:
         proposal["evidence"] = {}
 
-    # guardrails_ref MUST be either missing (None) OR a non-empty string.
-    # If caller provided None, remove key so validator treats as missing.
+    # guardrails_ref canonicalizes to "" when missing/None.
+    # IMPORTANT: do NOT set raw guardrails_ref to "" (validator rejects empty str when present).
+    # We keep it missing in raw, but we WILL include "" in the hash input canonical object.
     if "guardrails_ref" in proposal and proposal["guardrails_ref"] is None:
         proposal.pop("guardrails_ref", None)
 
     # Deterministic guardrails (strip + sort + dedupe)
-    if "guardrails" in proposal and isinstance(proposal["guardrails"], list):
-        proposal["guardrails"] = sorted(set([str(x).strip() for x in proposal["guardrails"]]))
+    guardrails_val = proposal.get("guardrails")
+    if isinstance(guardrails_val, list):
+        proposal["guardrails"] = sorted(set([str(x).strip() for x in guardrails_val]))
+    elif guardrails_val is None:
+        # allow missing/null -> canonical []
+        proposal.pop("guardrails", None)
 
     # Deterministic sort changes by change_id (if present and list)
     if "changes" in proposal and isinstance(proposal["changes"], list):
         proposal["changes"] = sorted(proposal["changes"], key=lambda d: d["change_id"])
 
-    base = dict(proposal)
-    base.pop("proposal_hash", None)
+    # Build canonical-without-hash dict for hashing (must match validator canonical dict keys)
+    try:
+        v = proposal["v"]
+        proposal_id = proposal["proposal_id"]
+        domain = proposal["domain"]
+        action = proposal["action"]
+        target = proposal["target"]
+        created_utc = proposal["created_utc"]
+        summary = proposal["summary"]
+        changes = proposal["changes"]
+    except KeyError as e:
+        raise ValueError(f"{ReasonId.AC_V3_MISSING_FIELD.value}: missing {e.args[0]!r}") from e
 
-    proposal["proposal_hash"] = compute_proposal_hash(base)
+    # Canonical evidence / guardrails / guardrails_ref for hashing
+    evidence = proposal["evidence"] if isinstance(proposal.get("evidence"), dict) else {}
+    guardrails = proposal.get("guardrails")
+    if isinstance(guardrails, list):
+        gids = sorted(set([str(x).strip() for x in guardrails]))
+    else:
+        gids = []
 
-    # Fail-closed: return canonical only
+    # If guardrails_ref is missing in raw, canonical hash input must use ""
+    guardrails_ref_raw = proposal.get("guardrails_ref", None)
+    guardrails_ref = ""
+    if guardrails_ref_raw is not None:
+        # if present, must be non-empty after strip (validator enforces)
+        guardrails_ref = str(guardrails_ref_raw).strip()
+
+    # Fail-closed guardrail existence check early (same as validator)
+    registry = load_registry()
+    registry.require_all(gids)
+
+    canonical_without_hash: Dict[str, Any] = {
+        "v": v,
+        "proposal_id": proposal_id,
+        "domain": domain,
+        "action": action,
+        "target": target,
+        "created_utc": created_utc,
+        "summary": summary,
+        "changes": changes,
+        "evidence": evidence,
+        "guardrails": gids,
+        "guardrails_ref": guardrails_ref,
+    }
+
+    proposal["proposal_hash"] = compute_proposal_hash(canonical_without_hash)
+
+    # Fail-closed: validate and return canonical object
     return validate_and_canonicalize_upgrade_proposal(proposal).canonical
 
 
