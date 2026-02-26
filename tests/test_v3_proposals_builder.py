@@ -101,3 +101,42 @@ def test_builder_accepts_guardrails_ref_none_and_canonicalizes() -> None:
     sealed = build_upgrade_proposal_v3(proposal)
 
     assert sealed["guardrails_ref"] == ""
+
+
+# --- coverage branch locks (missed lines: 93-95, 111-112, 120) ---
+
+
+def test_builder_allows_missing_guardrails_key() -> None:
+    # Hits builder branch: guardrails_val is None -> proposal.pop("guardrails", None)
+    proposal = _load_template()
+    proposal.pop("proposal_hash", None)
+    proposal.pop("guardrails", None)
+
+    sealed = build_upgrade_proposal_v3(proposal)
+
+    assert sealed["guardrails"] == []
+
+
+def test_builder_raises_missing_field_reason_on_required_key_missing() -> None:
+    # Hits builder KeyError branch (missing summary, etc.)
+    proposal = _load_template()
+    proposal.pop("proposal_hash", None)
+    proposal.pop("summary", None)
+
+    with pytest.raises(ValueError) as e:
+        build_upgrade_proposal_v3(proposal)
+
+    assert "AC_V3_MISSING_FIELD" in str(e.value)
+
+
+def test_builder_denies_guardrails_wrong_type() -> None:
+    # Hits builder branch: guardrails is not list -> gids = []
+    # Then validator fails closed on 'guardrails' type.
+    proposal = _load_template()
+    proposal.pop("proposal_hash", None)
+    proposal["guardrails"] = "NOT_A_LIST"
+
+    with pytest.raises(ValueError) as e:
+        build_upgrade_proposal_v3(proposal)
+
+    assert "AC_V3_PROPOSAL_INVALID" in str(e.value)
