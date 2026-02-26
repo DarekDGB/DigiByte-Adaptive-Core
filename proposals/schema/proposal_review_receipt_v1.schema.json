@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Adaptive Core Proposal Review Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "proposal_id",
+    "proposal_hash",
+    "decision",
+    "reviewer_id",
+    "receipt_hash"
+  ],
+  "properties": {
+    "v": {
+      "type": "string",
+      "const": "proposal_review_receipt_v1"
+    },
+    "proposal_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "proposal_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "APPROVE",
+        "REJECT"
+      ]
+    },
+    "reviewer_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_utc": {
+      "type": "string",
+      "minLength": 10
+    },
+    "consequence_simulation": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "notes": {
+      "type": "string"
+    },
+    "receipt_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
