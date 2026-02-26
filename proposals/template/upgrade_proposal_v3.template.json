@@ -15,7 +15,12 @@
     }
   ],
   "evidence": {},
-  "guardrails": ["AMG-001", "AMG-011"],
+  "guardrails": [
+    "AMG-001",
+    "AMG-011"
+  ],
   "guardrails_ref": "adaptive_core.v3.guardrails/amg_guardrails_v1.json#v1",
-  "proposal_hash": "PUT_SHA256_OF_CANONICAL_JSON_HERE"
+  "proposal_hash": "PUT_SHA256_OF_CANONICAL_JSON_HERE",
+  "domain": "SECURITY_THRESHOLDS",
+  "action": "INCREASE_THRESHOLD"
 }
