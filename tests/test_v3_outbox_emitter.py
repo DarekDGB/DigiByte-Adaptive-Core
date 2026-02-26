@@ -69,3 +69,14 @@ def test_outbox_emitter_denies_collision_with_different_content(tmp_path: Path) 
         emit_upgrade_proposal_v3_to_outbox(sealed, outbox_dir=outbox)
 
     assert "AC_V3_PROPOSAL_INVALID" in str(e.value)
+
+def test_outbox_emitter_denies_non_path_outbox_dir(tmp_path: Path) -> None:
+    raw = _load_template()
+    raw.pop("proposal_hash", None)
+    sealed = build_upgrade_proposal_v3(raw)
+
+    with pytest.raises(ValueError) as e:
+        # type: ignore[arg-type]
+        emit_upgrade_proposal_v3_to_outbox(sealed, outbox_dir="not-a-path")
+
+    assert "AC_V3_PROPOSAL_INVALID" in str(e.value)
