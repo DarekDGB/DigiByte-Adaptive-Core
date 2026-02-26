@@ -1,26 +1,25 @@
 {
   "v": "upgrade_proposal_v3",
-  "proposal_id": "AC-UPG::YYYYMMDD::EXAMPLE-001",
+  "proposal_id": "AC-YYYYMMDD-001",
+  "domain": "SECURITY_THRESHOLDS",
+  "action": "INCREASE_THRESHOLD",
   "target": {
-    "component": "adaptive_core",
-    "version": "v3"
+    "component": "eqc_engine",
+    "version": "3.0.0"
   },
-  "created_utc": "2026-02-24T00:00:00Z",
-  "summary": "Short description of the proposed change.",
+  "created_utc": "2026-02-26T00:00:00Z",
+  "summary": "Increase EQC threshold due to rising conflicting evidence pattern.",
   "changes": [
     {
       "change_id": "CHG-001",
       "type": "modify",
-      "detail": "Describe what changes and why."
+      "detail": "Increase EQC threshold from 0.70 to 0.80 to reduce false negatives."
     }
   ],
   "evidence": {},
   "guardrails": [
-    "AMG-001",
-    "AMG-011"
+    "AMG-001"
   ],
-  "guardrails_ref": "adaptive_core.v3.guardrails/amg_guardrails_v1.json#v1",
-  "proposal_hash": "PUT_SHA256_OF_CANONICAL_JSON_HERE",
-  "domain": "SECURITY_THRESHOLDS",
-  "action": "INCREASE_THRESHOLD"
+  "guardrails_ref": "docs/ADAPTIVE_CORE_GUARDRAILS.md",
+  "proposal_hash": "REPLACE_AFTER_HASH_COMPUTE"
 }
