@@ -56,6 +56,47 @@ class ProposalValidationResult:
     computed_hash: str
 
 
+def build_upgrade_proposal_v3(raw: Mapping[str, Any]) -> Dict[str, Any]:
+    """
+    Deterministically build + seal an upgrade_proposal_v3.
+
+    - Ensures evidence exists (defaults to {})
+    - Ensures guardrails_ref exists (defaults to "")
+    - Deterministic guardrails: strip + sort + dedupe
+    - Deterministic changes: sort by change_id
+    - Computes proposal_hash over canonical-without-hash
+    - Fail-closed: validates and returns canonical proposal
+    """
+    if not isinstance(raw, Mapping):
+        raise ValueError(f"{ReasonId.AC_V3_PROPOSAL_INVALID.value}: proposal must be an object")
+
+    proposal: Dict[str, Any] = dict(raw)
+
+    # Evidence must exist (validator defaults to {})
+    if "evidence" not in proposal or proposal["evidence"] is None:
+        proposal["evidence"] = {}
+
+    # guardrails_ref must exist (validator uses "" if absent)
+    if "guardrails_ref" not in proposal or proposal["guardrails_ref"] is None:
+        proposal["guardrails_ref"] = ""
+
+    # Deterministic guardrails (strip + sort + dedupe)
+    if "guardrails" in proposal and isinstance(proposal["guardrails"], list):
+        proposal["guardrails"] = sorted(set([str(x).strip() for x in proposal["guardrails"]]))
+
+    # Deterministic sort changes by change_id (if present and list)
+    if "changes" in proposal and isinstance(proposal["changes"], list):
+        proposal["changes"] = sorted(proposal["changes"], key=lambda d: d["change_id"])
+
+    base = dict(proposal)
+    base.pop("proposal_hash", None)
+
+    proposal["proposal_hash"] = compute_proposal_hash(base)
+
+    # Fail-closed: return canonical only
+    return validate_and_canonicalize_upgrade_proposal(proposal).canonical
+
+
 def _require_str(m: Mapping[str, Any], key: str) -> str:
     if key not in m:
         raise ValueError(f"{ReasonId.AC_V3_MISSING_FIELD.value}: missing {key!r}")
