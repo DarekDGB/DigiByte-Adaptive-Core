@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .proposals import build_upgrade_proposal_v3
 from .outbox import emit_upgrade_proposal_v3_to_outbox
-
-
-def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+from .proposals import build_upgrade_proposal_v3
 
 
 def maybe_propose_upgrade_from_findings(
@@ -19,17 +14,18 @@ def maybe_propose_upgrade_from_findings(
     proposal_id: str,
     component: str,
     version: str,
+    created_utc: str,
     outbox_dir: Path,
 ) -> Optional[Dict[str, Any]]:
     """
-    Deterministic advisory trigger.
+    Deterministic advisory trigger (human-only apply).
 
     If any finding contains drift_score >= drift_threshold,
-    emit an upgrade_proposal_v3 artifact and return canonical proposal.
-
+    emit a sealed upgrade_proposal_v3 artifact into outbox and return the canonical proposal.
     Otherwise return None.
-    """
 
+    created_utc is injected to preserve determinism (no clock reads).
+    """
     triggered = False
     max_drift = 0.0
 
@@ -48,11 +44,8 @@ def maybe_propose_upgrade_from_findings(
         "proposal_id": proposal_id,
         "domain": "SECURITY_THRESHOLDS",
         "action": "INCREASE_THRESHOLD",
-        "target": {
-            "component": component,
-            "version": version,
-        },
-        "created_utc": _utc_now_iso(),
+        "target": {"component": component, "version": version},
+        "created_utc": created_utc,
         "summary": f"Detected drift_score {max_drift:.4f} >= threshold {drift_threshold:.4f}.",
         "changes": [
             {
@@ -68,10 +61,5 @@ def maybe_propose_upgrade_from_findings(
     }
 
     sealed = build_upgrade_proposal_v3(raw)
-
-    emit_upgrade_proposal_v3_to_outbox(
-        sealed,
-        outbox_dir=outbox_dir,
-    )
-
+    emit_upgrade_proposal_v3_to_outbox(sealed, outbox_dir=outbox_dir)
     return sealed
