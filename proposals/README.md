@@ -1,23 +1,26 @@
-# Adaptive Core --- Upgrade Proposals Mailbox
+# Adaptive Core — Upgrade Proposals Mailbox + Outbox
 
-This directory is the **structured upgrade proposals mailbox** for
-Adaptive Core.
+This directory is the **structured upgrade proposals governance area** for Adaptive Core.
 
-Proposals are **advisory governance artifacts**. They are
-**human-reviewed** and submitted via Pull Request.
-
-Adaptive Core is **mailbox + validator + reporter**. It never applies
-upgrades automatically.
+Proposals are **advisory governance artifacts**:
+- **Adaptive Core may propose**
+- **Humans review**
+- **Humans apply changes via Pull Request**
+- Adaptive Core **never** auto-applies upgrades
 
 ------------------------------------------------------------------------
 
 ## 1. Directory Structure
 
--   `schema/` --- authoritative JSON schemas for proposals
--   `template/` --- proposal templates
--   `inbox/` --- proposals submitted via Pull Request (optional folder
-    if used)
--   `examples/` --- example proposals (optional)
+- `schema/` — authoritative JSON schemas for proposals
+- `template/` — proposal templates
+- `inbox/` — proposals submitted via Pull Request (optional workflow)
+- `outbox/` — **generated sealed artifacts** emitted by ACv3 tooling
+
+Notes:
+
+- `inbox/` is for PR submission inside this repo (optional).
+- `outbox/` is for **artifact generation**. Humans still decide what becomes a PR.
 
 ------------------------------------------------------------------------
 
@@ -25,58 +28,59 @@ upgrades automatically.
 
 All proposals MUST:
 
--   Conform to the v3 schema: `schema/upgrade_proposal_v3.schema.json`
--   Be submitted via Pull Request
--   Include supporting evidence references (reason IDs + findings
-    summary)
--   Declare intended scope and risk explicitly
--   Remain deterministic (no time-based or random fields)
+- Conform to the v3 schema: `schema/upgrade_proposal_v3.schema.json`
+- Be human-reviewed and submitted via Pull Request (in this repo or elsewhere)
+- Declare intended scope and risk explicitly
+- Remain deterministic (no time-based or random fields beyond explicit timestamps)
+- Never imply auto-upgrades or execution authority
 
 Any proposal failing schema or governance rules MUST be rejected.
 
 ------------------------------------------------------------------------
 
-## 3. Validation Model
+## 3. Validation Model (Fail-Closed)
 
 Validation is strict and fail-closed:
 
--   Unknown fields are rejected
--   Unknown reason IDs are rejected
--   Unknown guardrail IDs are rejected
--   Missing required evidence is rejected
+- Unknown fields are rejected
+- Unknown reason IDs are rejected
+- Unknown guardrail IDs are rejected
+- Hash mismatch is rejected
 
 This prevents hidden authority escalation.
 
 ------------------------------------------------------------------------
 
-## 4. Review Expectations
+## 4. Outbox Model (Generated Artifacts)
+
+ACv3 tooling can emit sealed proposals into `outbox/`:
+
+- File name is deterministic and derived from `proposal_id` + `proposal_hash`
+- If the same file already exists with the same bytes, emission is idempotent
+- If the file exists with different bytes, emission fails closed
+
+Outbox emission is **not execution**. It is **artifact production**.
+
+------------------------------------------------------------------------
+
+## 5. Review Expectations
 
 A reviewer SHOULD confirm:
 
--   The proposal is schema-valid
--   Evidence justification is sufficient
--   No guardrails are violated
--   The proposal does not imply auto-upgrades or execution authority
--   The proposed change has deterministic tests attached (where
-    applicable)
+- The proposal is schema-valid
+- Evidence justification is sufficient
+- No guardrails are violated
+- The proposal does not imply auto-upgrades or execution authority
+- The proposed change has deterministic tests attached (where applicable)
 
 ------------------------------------------------------------------------
 
-## 5. Relationship to External Systems
+## 6. Relationship to External Systems
 
-External systems (e.g., execution boundaries such as AdamantineOS) may:
+Execution boundaries (e.g., Adamantine Wallet OS) may:
 
--   Generate structured proposals
--   Submit them here for review
+- Consume proposal artifacts
+- Require human review receipts
+- Enforce strict validation before any decision is allowed
 
-Adaptive Core never pushes upgrades outward.
-
-------------------------------------------------------------------------
-
-## 6. Version Discipline
-
-Proposal schema changes require:
-
--   Contract review (docs/reports/v3/CONTRACT.md)
--   Deterministic regression tests
--   Documentation updates
+Adaptive Core never pushes upgrades outward and never applies them.
