@@ -1,14 +1,14 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Adaptive Core Upgrade Proposal v3",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "upgrade_proposal_v3",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "v",
     "proposal_id",
-    "target",
-    "action",
     "domain",
+    "action",
+    "target",
     "created_utc",
     "summary",
     "changes",
@@ -21,19 +21,35 @@
     },
     "proposal_id": {
       "type": "string",
-      "minLength": 8
+      "minLength": 1,
+      "pattern": "^[^\\s]+$"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "SECURITY_THRESHOLDS",
+        "DETECTION_RULES",
+        "EVIDENCE_REQUIREMENTS",
+        "ENFORCEMENT"
+      ]
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "INCREASE_THRESHOLD",
+        "ADD_RULE",
+        "TIGHTEN_EVIDENCE",
+        "STRENGTHEN_ENFORCEMENT"
+      ]
     },
     "target": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "component",
-        "version"
-      ],
+      "required": ["component", "version"],
       "properties": {
         "component": {
           "type": "string",
-          "minLength": 2
+          "minLength": 1
         },
         "version": {
           "type": "string",
@@ -43,11 +59,11 @@
     },
     "created_utc": {
       "type": "string",
-      "minLength": 10
+      "pattern": "Z$"
     },
     "summary": {
       "type": "string",
-      "minLength": 5
+      "minLength": 1
     },
     "changes": {
       "type": "array",
@@ -55,27 +71,19 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "change_id",
-          "type",
-          "detail"
-        ],
+        "required": ["change_id", "type", "detail"],
         "properties": {
           "change_id": {
             "type": "string",
-            "minLength": 4
+            "minLength": 1
           },
           "type": {
             "type": "string",
-            "enum": [
-              "add",
-              "modify",
-              "deprecate"
-            ]
+            "enum": ["add", "modify", "deprecate", "remove"]
           },
           "detail": {
             "type": "string",
-            "minLength": 3
+            "minLength": 1
           }
         }
       }
@@ -86,7 +94,8 @@
     "guardrails": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "guardrails_ref": {
@@ -94,26 +103,7 @@
     },
     "proposal_hash": {
       "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
-    },
-    "domain": {
-      "type": "string",
-      "enum": [
-        "SECURITY_THRESHOLDS",
-        "DETECTION_RULES",
-        "ENFORCEMENT",
-        "GUARDRAILS"
-      ]
-    },
-    "action": {
-      "type": "string",
-      "enum": [
-        "INCREASE_THRESHOLD",
-        "ADD_RULE",
-        "TIGHTEN_EVIDENCE",
-        "STRENGTHEN_ENFORCEMENT",
-        "ADD_GUARDRAIL"
-      ]
+      "pattern": "^[0-9a-f]{64}$"
     }
   }
 }
