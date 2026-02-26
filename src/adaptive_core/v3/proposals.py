@@ -61,7 +61,7 @@ def build_upgrade_proposal_v3(raw: Mapping[str, Any]) -> Dict[str, Any]:
     Deterministically build + seal an upgrade_proposal_v3.
 
     - Ensures evidence exists (defaults to {})
-    - Ensures guardrails_ref exists (defaults to "")
+    - guardrails_ref: if missing -> leave missing (None). DO NOT default to "" (validator rejects empty str)
     - Deterministic guardrails: strip + sort + dedupe
     - Deterministic changes: sort by change_id
     - Computes proposal_hash over canonical-without-hash
@@ -72,13 +72,15 @@ def build_upgrade_proposal_v3(raw: Mapping[str, Any]) -> Dict[str, Any]:
 
     proposal: Dict[str, Any] = dict(raw)
 
-    # Evidence must exist (validator defaults to {})
-    if "evidence" not in proposal or proposal["evidence"] is None:
+    # Evidence may be omitted; canonical output will contain {}.
+    # But if caller includes evidence=None, normalize to {} for safety.
+    if "evidence" in proposal and proposal["evidence"] is None:
         proposal["evidence"] = {}
 
-    # guardrails_ref must exist (validator uses "" if absent)
-    if "guardrails_ref" not in proposal or proposal["guardrails_ref"] is None:
-        proposal["guardrails_ref"] = ""
+    # guardrails_ref MUST be either missing (None) OR a non-empty string.
+    # If caller provided None, remove key so validator treats as missing.
+    if "guardrails_ref" in proposal and proposal["guardrails_ref"] is None:
+        proposal.pop("guardrails_ref", None)
 
     # Deterministic guardrails (strip + sort + dedupe)
     if "guardrails" in proposal and isinstance(proposal["guardrails"], list):
