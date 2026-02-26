@@ -20,7 +20,6 @@ def _load_template() -> dict:
 
 def test_builder_seals_template_and_returns_canonical() -> None:
     proposal = _load_template()
-    # Template contains placeholder hash — builder must compute correct one.
     proposal.pop("proposal_hash", None)
 
     sealed = build_upgrade_proposal_v3(proposal)
@@ -31,7 +30,6 @@ def test_builder_seals_template_and_returns_canonical() -> None:
     assert isinstance(sealed["guardrails"], list)
     assert isinstance(sealed["changes"], list)
 
-    # Canonical expectations: guardrails + changes are deterministic order
     assert sealed["guardrails"] == sorted(sealed["guardrails"])
     assert [c["change_id"] for c in sealed["changes"]] == sorted(c["change_id"] for c in sealed["changes"])
 
@@ -69,10 +67,7 @@ def test_builder_normalizes_guardrails_and_sorts_changes() -> None:
     proposal = _load_template()
     proposal.pop("proposal_hash", None)
 
-    # hit builder branches for guardrails list normalization
     proposal["guardrails"] = [" AMG-001 ", "AMG-001", "AMG-002"]
-
-    # hit builder branches for sorting changes by change_id
     proposal["changes"] = [
         {"change_id": "B", "type": "modify", "detail": "second"},
         {"change_id": "A", "type": "add", "detail": "first"},
@@ -88,10 +83,7 @@ def test_builder_defaults_evidence_and_guardrails_ref_when_missing() -> None:
     proposal = _load_template()
     proposal.pop("proposal_hash", None)
 
-    # Hit the uncovered evidence default branch:
     proposal.pop("evidence", None)
-
-    # Correct behavior: guardrails_ref may be missing (canonical output becomes "")
     proposal.pop("guardrails_ref", None)
 
     sealed = build_upgrade_proposal_v3(proposal)
@@ -104,7 +96,6 @@ def test_builder_accepts_guardrails_ref_none_and_canonicalizes() -> None:
     proposal = _load_template()
     proposal.pop("proposal_hash", None)
 
-    # Hit builder branch that removes guardrails_ref when explicitly None:
     proposal["guardrails_ref"] = None
 
     sealed = build_upgrade_proposal_v3(proposal)
