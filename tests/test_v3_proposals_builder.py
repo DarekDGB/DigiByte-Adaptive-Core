@@ -81,3 +81,16 @@ def test_builder_normalizes_guardrails_and_sorts_changes() -> None:
 
     assert sealed["guardrails"] == ["AMG-001", "AMG-002"]
     assert [c["change_id"] for c in sealed["changes"]] == ["A", "B"]
+
+def test_builder_defaults_evidence_and_guardrails_ref_when_missing() -> None:
+    proposal = _load_template()
+    proposal.pop("proposal_hash", None)
+
+    # Hit the two uncovered lines:
+    proposal.pop("evidence", None)
+    proposal.pop("guardrails_ref", None)
+
+    sealed = build_upgrade_proposal_v3(proposal)
+
+    assert sealed["evidence"] == {}
+    assert sealed["guardrails_ref"] == ""
