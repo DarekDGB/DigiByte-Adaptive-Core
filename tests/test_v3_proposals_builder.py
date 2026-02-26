@@ -56,3 +56,28 @@ def test_builder_denies_unknown_guardrail() -> None:
         build_upgrade_proposal_v3(proposal)
 
     assert "AC_V3_GUARDRAIL_UNKNOWN" in str(e.value)
+
+def test_builder_denies_non_mapping_input() -> None:
+    with pytest.raises(ValueError) as e:
+        # type: ignore[arg-type]
+        build_upgrade_proposal_v3(["not", "a", "mapping"])
+    assert "AC_V3_PROPOSAL_INVALID" in str(e.value)
+
+
+def test_builder_normalizes_guardrails_and_sorts_changes() -> None:
+    proposal = _load_template()
+    proposal.pop("proposal_hash", None)
+
+    # hit builder branches for guardrails list normalization
+    proposal["guardrails"] = [" AMG-001 ", "AMG-001", "AMG-002"]
+
+    # hit builder branches for sorting changes by change_id
+    proposal["changes"] = [
+        {"change_id": "B", "type": "modify", "detail": "second"},
+        {"change_id": "A", "type": "add", "detail": "first"},
+    ]
+
+    sealed = build_upgrade_proposal_v3(proposal)
+
+    assert sealed["guardrails"] == ["AMG-001", "AMG-002"]
+    assert [c["change_id"] for c in sealed["changes"]] == ["A", "B"]
