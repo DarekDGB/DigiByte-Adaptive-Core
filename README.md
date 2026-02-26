@@ -1,18 +1,18 @@
-DigiByte Adaptive Core (v3.0.0)
+## DigiByte Adaptive Core (v3.1.0)
 
 ![CI](https://github.com/DarekDGB/DigiByte-Adaptive-Core/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![License](https://img.shields.io/github/license/DarekDGB/DigiByte-Adaptive-Core)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 
-**Adaptive Core v3.0.0** is the deterministic Upgrade Oracle of the
+**Adaptive Core v3.1.0** is the deterministic Upgrade Oracle of the
 DigiByte Quantum Shield.
 
 It is a read-only, deterministic, fail-closed advisory system that
 observes shield signals, derives evidence and findings, and produces
-human-reviewed upgrade reports.
+structured governance artifacts for human review.
 
-> Adaptive Core v3 observes, summarizes, and reports.\
+> Adaptive Core v3 observes, summarizes, and proposes.\
 > It never executes, never modifies state, and never self-upgrades.
 
 ------------------------------------------------------------------------
@@ -22,8 +22,9 @@ human-reviewed upgrade reports.
 -   Read-only / advisory only
 -   Deterministic & replayable
 -   Fail-closed (no silent defaults)
--   Human-reviewed outputs
+-   Human-reviewed governance artifacts
 -   No authority over keys, transactions, or nodes
+-   Strict contract enforcement
 -   Aligned with Archangel Michael Guardrails
 
 ------------------------------------------------------------------------
@@ -39,8 +40,9 @@ flowchart TB
   GW["Guardian Wallet v3"]
 
   AC["Adaptive Core v3 (Upgrade Oracle)"]
-  HR["Human Review"]
-  Up["Manual Shield Upgrades"]
+  Outbox["Outbox Artifact (upgrade_proposal_v3)"]
+  HR["Human Review (Pull Request)"]
+  Apply["Manual Shield Upgrade (PR Merge)"]
 
   Sentinel --> AC
   DQSN --> AC
@@ -48,7 +50,7 @@ flowchart TB
   QWG --> AC
   GW --> AC
 
-  AC --> HR --> Up
+  AC --> Outbox --> HR --> Apply
 ```
 
 ------------------------------------------------------------------------
@@ -56,24 +58,48 @@ flowchart TB
 ## 📦 What Adaptive Core v3 Produces
 
 -   Canonicalized observations (strict schema)
--   Deterministic evidence counters (hot-window)
+-   Deterministic evidence counters (hot-window model)
 -   Deterministic findings & drift indicators
 -   Human-readable upgrade reports (JSON + Markdown)
 -   Integrity envelopes (hash + signature status)
 -   Privacy-preserving cross-node summaries
--   Structured upgrade proposals (v3 schema)
+-   Structured `upgrade_proposal_v3` governance artifacts
+
+------------------------------------------------------------------------
+
+## 📤 Governance Model (Human-Only Apply)
+
+Adaptive Core may **propose** upgrades.
+
+Only humans may **apply** upgrades.
+
+Flow:
+
+1.  ACv3 detects drift / pattern / confidence degradation.
+2.  ACv3 builds and seals an `upgrade_proposal_v3` (deterministic hash).
+3.  ACv3 optionally emits artifact into `proposals/outbox/`.
+4.  A human opens a Pull Request to apply the actual change.
+5.  CI + contract enforcement validate the change.
+
+Adaptive Core:
+
+-   Does not auto-merge
+-   Does not auto-execute
+-   Does not mutate code or configuration
+-   Does not hold authority over execution boundaries
 
 ------------------------------------------------------------------------
 
 ## 📥 Upgrade Proposals Mailbox
 
-Adaptive Core v3 introduces a structured `proposals/` mailbox.
+The `proposals/` directory defines structured governance.
 
--   All upgrade proposals must conform to:
-    `proposals/schema/upgrade_proposal_v3.schema.json`
--   Proposals are submitted via Pull Request.
--   No automatic upgrades are ever applied.
--   All proposals require explicit human review.
+-   Schema: `proposals/schema/upgrade_proposal_v3.schema.json`
+-   Deterministic canonical hash required
+-   Guardrails validated at build time
+-   Outbox emission is artifact-only (idempotent, fail-closed on
+    collision)
+-   All real changes require explicit human Pull Request
 
 This enforces:
 
@@ -92,23 +118,22 @@ This enforces:
 -   Auto-apply patches
 -   Guess missing data
 -   Perform black-box ML
+-   Escalate authority beyond advisory role
 
 ------------------------------------------------------------------------
 
 ## 📚 Documentation
 
-All authoritative documentation lives under:
+Authoritative documentation lives under:
 
 docs/reports/v3/
 
 Key documents include:
 
--   README.md --- v3 overview
--   INDEX.md --- documentation index
 -   CONTRACT.md --- normative behavior contract
 -   AUTHORITY_BOUNDARIES.md --- hard authority limits
 -   GUARDRAILS.md --- enforced guardrails registry
--   SECURITY.md --- security posture & disclosure
+-   SECURITY.md --- security posture
 -   REPORT_FORMAT.md --- report structure
 -   PIPELINE_USAGE.md --- execution pipeline
 -   NODE_SUMMARY.md --- cross-node aggregation
@@ -117,29 +142,30 @@ Key documents include:
 -   CONFIDENCE_MODEL.md --- confidence scoring
 -   EVIDENCE_STORE.md --- evidence window semantics
 
-If docs and code ever diverge, code + CONTRACT.md wins.
+If docs and code ever diverge, code + CONTRACT.md win.
 
 ------------------------------------------------------------------------
 
 ## 🧪 Quality & Verification
 
 -   CI enforced
--   100% test coverage (coverage gate enforced in CI)
+-   100% test coverage (coverage gate enforced)
 -   Deterministic tests only
 -   No silent fallback paths
--   All guardrails validated at runtime
+-   Guardrails validated at runtime
+-   Canonical hash invariant enforced
 
 ------------------------------------------------------------------------
 
 ## 🔗 Integration Model
 
-Adaptive Core v3 acts as a deterministic advisory layer.
+Adaptive Core v3 is a deterministic advisory layer.
 
-External systems (e.g., execution boundaries such as AdamantineOS) may:
+Execution boundaries (e.g., AdamantineOS) may:
 
-1.  Generate structured upgrade proposals.
-2.  Submit them to the Adaptive Core `proposals/` mailbox.
-3.  Undergo human review before any shield changes occur.
+1.  Consume sealed upgrade proposals.
+2.  Require human review receipts.
+3.  Enforce fail-closed decision boundaries.
 
 Adaptive Core never pushes changes outward.
 
