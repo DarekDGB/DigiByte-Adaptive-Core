@@ -97,25 +97,24 @@ version discipline.
 
 ------------------------------------------------------------------------
 
-## 6. Upgrade Proposals (Mailbox + Validation)
+## 6. Upgrade Proposals (Mailbox + Validation + Optional Outbox)
 
-ACv3 supports **structured upgrade proposals** as a *human-reviewed
-mailbox*.
+ACv3 supports **structured upgrade proposals** as a *human-reviewed mailbox*.
 
 Rules:
 
--   Proposals MUST conform to the v3 schema:
-    [`proposals/schema/upgrade_proposal_v3.schema.json`](../../../proposals/schema/upgrade_proposal_v3.schema.json)
--   Proposals are submitted via Pull Request into the repository
-    `proposals/` mailbox.
--   ACv3 MUST NOT auto-apply upgrades, auto-merge proposals, or mutate
-    external systems.
--   Unknown proposal fields, unknown guardrail IDs, or schema violations
-    MUST fail-closed.
+- Proposals MUST conform to the v3 schema:
+  [`proposals/schema/upgrade_proposal_v3.schema.json`](../../../proposals/schema/upgrade_proposal_v3.schema.json)
+- Proposals are **human-reviewed** and submitted via Pull Request into the repository
+  `proposals/` mailbox.
+- ACv3 MUST NOT auto-apply upgrades, auto-merge proposals, or mutate external systems.
 
-ACv3's role is **mailbox + validator + reporter** --- not executor.
+Optional Outbox (artifact emission):
 
-------------------------------------------------------------------------
+- ACv3 tooling MAY emit sealed proposals into `proposals/outbox/` as deterministic artifacts.
+- Outbox emission is **idempotent** when the same bytes already exist.
+- If a deterministic filename collision occurs with different bytes, emission MUST fail-closed.
+- Outbox emission does not grant execution authority; it is governance artifact production only.
 
 ## 7. Implementation Surface (Current Modules)
 
