@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import re
+
 from typing import Any, Dict, Mapping, Sequence
 
 from adaptive_core.v3.reason_ids import ReasonId
 
 ADAMANTINE_ADVISORY_EVIDENCE_VERSION = "adaptive_core_oracle_v3"
+_CONTEXT_HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 
 _ALLOWED_ROOT_KEYS = {
     "ac_iface_version",
@@ -54,6 +57,13 @@ def _require_non_empty_str(value: Any, field: str) -> str:
     return value.strip()
 
 
+def _require_context_hash(value: Any, field: str) -> str:
+    text = _require_non_empty_str(value, field)
+    if _CONTEXT_HASH_RE.fullmatch(text) is None:
+        _fail(f"{field} must be lowercase 64-character hex")
+    return text
+
+
 def _require_int(value: Any, field: str) -> int:
     if not isinstance(value, int):
         _fail(f"{field} must be an integer")
@@ -92,6 +102,7 @@ def build_adamantine_advisory_evidence_v1(
     signals: Sequence[Mapping[str, Any]] | None = None,
     oracle_version: str = "adaptive-core/3.0.0",
     external_source_id: str = "adaptive-core-v3-adamantine-export",
+    now: int | None = None,
 ) -> dict[str, Any]:
     """Build AdamantineOS-consumable Adaptive Core advisory evidence.
 
@@ -113,10 +124,10 @@ def build_adamantine_advisory_evidence_v1(
         "oracle_version": oracle_version,
         "external_source_id": external_source_id,
     }
-    return validate_adamantine_advisory_evidence_v1(payload)
+    return validate_adamantine_advisory_evidence_v1(payload, now=now)
 
 
-def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any]) -> dict[str, Any]:
+def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any], *, now: int | None = None) -> dict[str, Any]:
     """Validate an AdamantineOS-facing Adaptive Core advisory evidence object."""
 
     if not isinstance(payload, Mapping):
@@ -132,7 +143,7 @@ def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any]) -> dict
     if payload.get("ac_iface_version") != ADAMANTINE_ADVISORY_EVIDENCE_VERSION:
         _fail(f"ac_iface_version must be {ADAMANTINE_ADVISORY_EVIDENCE_VERSION}")
 
-    context_hash = _require_non_empty_str(payload.get("context_hash"), "context_hash")
+    context_hash = _require_context_hash(payload.get("context_hash"), "context_hash")
     issued_at = _require_int(payload.get("issued_at"), "issued_at")
     expires_at = _require_int(payload.get("expires_at"), "expires_at")
     generated_at = _require_int(payload.get("generated_at"), "generated_at")
@@ -140,8 +151,17 @@ def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any]) -> dict
 
     if expires_at < issued_at:
         _fail("expires_at must be greater than or equal to issued_at")
+    if now is not None:
+        if not isinstance(now, int):
+            _fail("now must be an integer when provided")
+        if issued_at > now:
+            _fail("issued_at cannot be in the future")
+        if expires_at < now:
+            _fail("expires_at cannot be in the past")
     if generated_at <= 0:
         _fail("generated_at must be positive")
+    if now is not None and generated_at > now:
+        _fail("generated_at cannot be in the future")
     if not 0 <= overall_score <= 100:
         _fail("overall_score must be between 0 and 100")
 
