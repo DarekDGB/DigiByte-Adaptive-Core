@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import uuid
 
@@ -59,7 +59,7 @@ class ThreatPacket:
         # --- Timestamp handling ---
         # Keep v2 convenience: auto-fill timestamp if missing/empty.
         if not self.timestamp:
-            self.timestamp = datetime.utcnow().isoformat() + "Z"
+            self.timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         else:
             # If caller provided a timestamp, it must be parseable.
             # Accept the common trailing Z by stripping it for fromisoformat().
