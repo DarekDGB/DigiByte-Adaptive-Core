@@ -97,3 +97,40 @@ def test_nested_authority_field_denies_when_root_key_is_allowed():
 
     with pytest.raises(ValueError, match="authority fields are forbidden"):
         validate_adamantine_advisory_evidence_v1(payload)
+
+
+def test_validation_enforces_canonical_context_hash() -> None:
+    with pytest.raises(ValueError, match="context_hash must be lowercase 64-character hex"):
+        validate_adamantine_advisory_evidence_v1(_payload(context_hash="A" * 64))
+
+    with pytest.raises(ValueError, match="context_hash must be lowercase 64-character hex"):
+        validate_adamantine_advisory_evidence_v1(_payload(context_hash="not-a-hex-context"))
+
+
+def test_validation_enforces_time_window_when_now_is_provided() -> None:
+    with pytest.raises(ValueError, match="issued_at cannot be in the future"):
+        validate_adamantine_advisory_evidence_v1(_payload(issued_at=1_001, expires_at=1_200), now=1_000)
+
+    with pytest.raises(ValueError, match="expires_at cannot be in the past"):
+        validate_adamantine_advisory_evidence_v1(_payload(issued_at=900, expires_at=999), now=1_000)
+
+    with pytest.raises(ValueError, match="generated_at cannot be in the future"):
+        validate_adamantine_advisory_evidence_v1(_payload(generated_at=1_001), now=1_000)
+
+
+def test_builder_enforces_time_window_when_now_is_provided() -> None:
+    payload = build_adamantine_advisory_evidence_v1(
+        context_hash=CTX,
+        issued_at=900,
+        expires_at=1_200,
+        generated_at=950,
+        overall_score=91,
+        now=1_000,
+    )
+
+    assert payload["context_hash"] == CTX
+
+
+def test_validation_rejects_non_integer_now_when_provided() -> None:
+    with pytest.raises(ValueError, match="now must be an integer"):
+        validate_adamantine_advisory_evidence_v1(_payload(), now="1000")  # type: ignore[arg-type]
