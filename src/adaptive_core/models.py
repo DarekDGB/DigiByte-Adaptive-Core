@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class FeedbackType(str, Enum):
@@ -40,7 +44,7 @@ class RiskEvent:
     risk_score: float             # e.g. 0.0 – 1.0 QRI-like value
     risk_level: str               # e.g. "normal", "elevated", "high", "critical"
     fingerprint: Optional[str] = None  # hash / pattern identifier
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
     feedback: FeedbackType = FeedbackType.UNKNOWN
 
 
@@ -65,7 +69,7 @@ class AdaptiveState:
 
     layer_weights: Dict[str, float] = field(default_factory=dict)
     global_threshold: float = 0.5  # base QRI threshold (0–1 range)
-    last_updated: datetime = field(default_factory=datetime.utcnow)
+    last_updated: datetime = field(default_factory=_utc_now)
 
     def normalised_weights(self) -> Dict[str, float]:
         total = sum(self.layer_weights.values()) or 1.0
@@ -83,7 +87,11 @@ class AdaptiveUpdateResult:
     processed_events: List[str] = field(default_factory=list)
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 from typing import Dict, Any
 
 
@@ -99,4 +107,4 @@ class AdaptiveEvent:
     severity: float
     qri_delta: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
