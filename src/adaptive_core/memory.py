@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from typing import Dict, List, Iterable, Deque, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .models import RiskEvent, AdaptiveState, FeedbackType
 
@@ -98,7 +98,7 @@ class InMemoryAdaptiveStore:
         - avoid relying on AdaptiveState.copy() (not guaranteed)
         """
         snapshot = StateSnapshot(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             # Snapshot copy without requiring .copy()
             state=AdaptiveState(**state.__dict__),
         )
