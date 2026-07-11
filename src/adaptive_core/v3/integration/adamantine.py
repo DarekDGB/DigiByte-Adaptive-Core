@@ -9,7 +9,7 @@ from adaptive_core.v3.reason_ids import ReasonId
 ADAMANTINE_ADVISORY_EVIDENCE_VERSION = "adaptive_core_oracle_v3"
 _CONTEXT_HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 
-_ALLOWED_ROOT_KEYS = {
+_ALLOWED_ROOT_KEYS = frozenset({
     "ac_iface_version",
     "context_hash",
     "issued_at",
@@ -19,36 +19,23 @@ _ALLOWED_ROOT_KEYS = {
     "signals",
     "oracle_version",
     "external_source_id",
-}
+})
 
-_FORBIDDEN_AUTHORITY_KEYS = {
-    "allow",
-    "approve",
-    "approved",
-    "authority",
-    "authorization",
-    "bypass",
-    "final_approval",
-    "grant_execution",
-    "handoff_allowed",
-    "override",
-}
+_ALLOWED_SIGNAL_KEYS = frozenset({"source", "severity", "reason_ids"})
 
 
 def _fail(message: str) -> "NoReturn":  # type: ignore[name-defined]
     raise ValueError(f"{ReasonId.AC_V3_REPORT_INVALID.value}: {message}")
 
 
-def _contains_forbidden_authority_field(value: Any) -> bool:
-    if isinstance(value, Mapping):
-        for key, child in value.items():
-            if isinstance(key, str) and key in _FORBIDDEN_AUTHORITY_KEYS:
-                return True
-            if _contains_forbidden_authority_field(child):
-                return True
-    elif isinstance(value, list):
-        return any(_contains_forbidden_authority_field(item) for item in value)
-    return False
+def _unknown_field_names(value: Mapping[Any, Any], allowed: frozenset[str]) -> list[str]:
+    unknown: set[str] = set()
+    for key in value.keys():
+        if type(key) is not str:
+            unknown.add(f"<non-string:{type(key).__name__}>")
+        elif key not in allowed:
+            unknown.add(key)
+    return sorted(unknown)
 
 
 def _require_non_empty_str(value: Any, field: str) -> str:
@@ -65,7 +52,7 @@ def _require_context_hash(value: Any, field: str) -> str:
 
 
 def _require_int(value: Any, field: str) -> int:
-    if not isinstance(value, int):
+    if isinstance(value, bool) or not isinstance(value, int):
         _fail(f"{field} must be an integer")
     return value
 
@@ -78,6 +65,9 @@ def _validate_signals(signals: Any) -> list[dict[str, Any]]:
     for index, signal in enumerate(signals):
         if not isinstance(signal, Mapping):
             _fail(f"signals[{index}] must be an object")
+        unknown = _unknown_field_names(signal, _ALLOWED_SIGNAL_KEYS)
+        if unknown:
+            _fail(f"signals[{index}] unknown fields: {unknown}")
         source = _require_non_empty_str(signal.get("source"), f"signals[{index}].source")
         severity = _require_int(signal.get("severity"), f"signals[{index}].severity")
         if not 0 <= severity <= 100:
@@ -133,12 +123,9 @@ def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any], *, now:
     if not isinstance(payload, Mapping):
         _fail("payload must be an object")
 
-    unknown = sorted(set(payload.keys()) - _ALLOWED_ROOT_KEYS)
+    unknown = _unknown_field_names(payload, _ALLOWED_ROOT_KEYS)
     if unknown:
         _fail(f"unknown fields: {unknown}")
-
-    if _contains_forbidden_authority_field(payload):
-        _fail("authority fields are forbidden")
 
     if payload.get("ac_iface_version") != ADAMANTINE_ADVISORY_EVIDENCE_VERSION:
         _fail(f"ac_iface_version must be {ADAMANTINE_ADVISORY_EVIDENCE_VERSION}")
@@ -152,8 +139,7 @@ def validate_adamantine_advisory_evidence_v1(payload: Mapping[str, Any], *, now:
     if expires_at < issued_at:
         _fail("expires_at must be greater than or equal to issued_at")
     if now is not None:
-        if not isinstance(now, int):
-            _fail("now must be an integer when provided")
+        now = _require_int(now, "now")
         if issued_at > now:
             _fail("issued_at cannot be in the future")
         if expires_at < now:
