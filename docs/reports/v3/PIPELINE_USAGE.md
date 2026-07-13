@@ -19,7 +19,7 @@ Adaptive Core v3 follows a strict flow:
 3.  Process through deterministic evidence window.
 4.  Derive findings (including optional drift signals).
 5.  Build canonical report artifacts (JSON + Markdown).
-6.  Compute integrity envelope (context_hash).
+6.  Compute the integrity envelope (`report_hash` over canonical report JSON).
 7.  Return advisory output to caller.
 
 No step mutates external systems.
@@ -50,10 +50,13 @@ If any of the following occur:
 -   Invalid canonicalization state
 -   Integrity mismatch
 
-The pipeline MUST return a structured failure with explicit reason
-identifiers.
+Validation failures MUST reject the call through the applicable
+fail-closed exception path. The pipeline does not define or return a
+structured failure object, and it MUST NOT emit partial advisory output
+after rejection.
 
-It must never silently downgrade behavior.
+It must never silently downgrade behavior or convert rejection into an
+advisory success.
 
 ------------------------------------------------------------------------
 
@@ -61,20 +64,24 @@ It must never silently downgrade behavior.
 
 The pipeline returns:
 
--   findings\[\]
+-   report object (including `findings[]`)
 -   report_json (canonical)
 -   report_markdown (rendered view)
--   integrity_envelope:
-    -   context_hash
-    -   signature_status
+-   `ReportEnvelopeV3` integrity-envelope object:
+    -   report_hash
+    -   canonical_json (the exact string also returned as `report_json`)
+    -   classical_signature (`ABSENT`, `PRESENT`, or `UNSUPPORTED`)
+    -   pqc_signature (`ABSENT`, `PRESENT`, or `UNSUPPORTED`)
 
 These outputs are advisory and require human review.
+The signature fields are local caller-supplied status metadata. They do not contain signature bytes and do not prove cryptographic verification.
+The envelope object's `to_dict()` view omits `canonical_json` and emits the other three fields.
 
 ------------------------------------------------------------------------
 
 ## 5. Integration Model
 
-External systems (e.g., execution boundaries such as AdamantineOS):
+External systems such as AdamantineOS:
 
 -   Call Adaptive Core with strict v3 observations.
 -   Receive advisory output.
@@ -83,6 +90,7 @@ External systems (e.g., execution boundaries such as AdamantineOS):
     Request.
 
 Adaptive Core never pushes updates outward.
+AdamantineOS independently verifies Shield evidence under verifier-controlled policy and remains the authoritative, fail-closed final policy and execution boundary.
 
 ------------------------------------------------------------------------
 
@@ -94,5 +102,14 @@ The pipeline is not:
 -   A consensus engine
 -   An auto-remediation engine
 -   A governance automation system
+-   A Shield signature verifier or Shield key selector
 
 It is a deterministic intelligence layer only.
+
+------------------------------------------------------------------------
+
+## 7. Shield v4 Compatibility
+
+Shield evidence requires `classical-ed25519 + ml-dsa`. Optional `fn-dsa` evidence uses Falcon-1024 under `fips206-draft-falcon1024-v1`; it cannot replace or rescue failed required evidence and is not final FIPS 206 proof.
+
+Adaptive Core does not enforce that cryptographic policy. Q-ID identity keys and Shield decision-evidence keys remain separate. Adaptive output cannot approve, override, downgrade, bypass, or rescue a Shield result.
