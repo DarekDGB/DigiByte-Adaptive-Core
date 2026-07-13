@@ -1,12 +1,14 @@
- # DigiByte Quantum Adaptive Core v2  
+# DigiByte Quantum Adaptive Core v2  
  ## Full-Scale Virtual Attack Simulation — 3 Scenarios
 
- **Repository:** `Digibyte-Quantum-Adaptive-Core`  
- **Module under test:** `adaptive_core` (AdaptiveEngine + ThreatMemory + DeepPatternEngine)  
- **Author:** @Darek_DGB (with AI-assisted red‑team design)  
+ **Repository:** `DigiByte-Adaptive-Core`\
+ **Module under test:** `adaptive_core` (AdaptiveEngine + ThreatMemory + DeepPatternEngine)\
+ **Author:** DarekDGB\
  **Date:** _virtual test session_
 
  ---
+
+ > **Legacy status:** This historical simulation is non-normative for Adaptive Core v3 and Shield v4. It does not prove current automated defence, execution authority, or cryptographic verification. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. See the [v3 contract](../v3/CONTRACT.md).
 
  ## 1. Overview
 
