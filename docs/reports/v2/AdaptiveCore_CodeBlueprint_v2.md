@@ -1,10 +1,11 @@
 # 🧬 Adaptive Core — Code Blueprint (v2)
 
 Author: DarekDGB  
-AI Engineering Assistant: Angel  
 License: MIT
 
 ---
+
+> **Legacy status:** This historical v2 document is non-normative for Adaptive Core v3 and Shield v4. It does not define current authority or cryptographic verification. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. See the [v3 contract](../v3/CONTRACT.md).
 
 ## Overview
 This document provides a **structural blueprint** of all modules inside the Adaptive Core.  
