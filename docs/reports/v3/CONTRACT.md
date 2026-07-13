@@ -12,8 +12,8 @@ fixed with a regression test.
 
 ## 1. Purpose
 
-Adaptive Core v3 ("ACv3") is the **Upgrade Oracle** for the DigiByte
-Quantum Shield.
+Adaptive Core v3 ("ACv3") is the **Upgrade Oracle** in the DigiByte
+Quantum Shield v4 ecosystem.
 
 It ingests **strict, canonicalized, v3-shaped observations** and
 produces **deterministic advisory outputs**:
@@ -22,7 +22,8 @@ produces **deterministic advisory outputs**:
 -   findings (including optional drift findings when explicit contracts
     are provided)
 -   upgrade reports (canonical JSON + stable Markdown)
--   integrity envelope (deterministic hash + explicit signature status)
+-   integrity envelope (`report_hash` plus explicit local
+    `classical_signature` and `pqc_signature` status metadata)
 
 ACv3 exists to support **human-reviewed decisions** and **manual
 upgrades** only.
@@ -46,6 +47,20 @@ ACv3 MUST NOT:
 -   auto-apply patches or upgrades
 -   guess missing data
 -   introduce black-box ML behavior
+
+### 2.1 Shield v4 compatibility boundary
+
+ACv3 MUST NOT:
+
+-   parse or verify Shield signature bundles
+-   select or reuse Shield trust-registry keys
+-   interpret Shield evidence as approval or execution authority
+-   approve, override, downgrade, bypass, or rescue a Shield outcome
+-   reuse Q-ID identity keys as Shield decision-evidence keys
+
+Shield evidence requires `classical-ed25519 + ml-dsa`. Optional `fn-dsa` evidence uses Falcon-1024 under `fips206-draft-falcon1024-v1`; it is optional draft-profile evidence, not final FIPS 206 proof. ACv3 does not enforce this cryptographic policy and cannot make FN-DSA required or use it as rescue logic.
+
+AdamantineOS independently verifies Shield evidence under verifier-controlled policy and remains the authoritative, fail-closed final policy and execution boundary.
 
 ------------------------------------------------------------------------
 
@@ -85,12 +100,18 @@ ACv3 outputs include:
     -   optional drift findings when explicit contracts exist
 2.  **Report Artifacts**
     -   canonical JSON report (stable structure)
-    -   stable Markdown rendering of the same report content
+    -   stable human-readable Markdown subset and summary derived from
+        the same report object
 3.  **Integrity Envelope**
-    -   deterministic context hash computed over canonical report
-        content
-    -   explicit signature status (present/absent/invalid) without
-        implied authority
+    -   in-memory `ReportEnvelopeV3` retains the exact `canonical_json`
+        string alongside its hash and status metadata
+    -   deterministic `report_hash` computed over canonical report
+        JSON
+    -   local `classical_signature` and `pqc_signature` status metadata
+        using exactly `ABSENT`, `PRESENT`, or `UNSUPPORTED`
+    -   no signature bytes, signature verification, or implied authority
+
+`ReportEnvelopeV3.to_dict()` emits `report_hash`, `classical_signature`, and `pqc_signature`; `canonical_json` remains observable on the envelope object and is already returned separately by the pipeline.
 
 Output formats are contract-defined and MUST NOT change without contract
 version discipline.
@@ -131,8 +152,10 @@ The v3 implementation surface includes:
 -   Guardrails registry: `adaptive_core.v3.guardrails.registry`
 -   Reason IDs: `adaptive_core.v3.reason_ids`
 -   Report builder/renderers: `adaptive_core.v3.report_builder`
--   Integrity envelope: `adaptive_core.v3.envelope`,
-    `adaptive_core.v3.context_hash`
+-   Integrity envelope: `adaptive_core.v3.envelope`
+-   Event context hashing: `adaptive_core.v3.context_hash`
+-   AdamantineOS advisory exporter:
+    `adaptive_core.v3.integration.adamantine`
 -   Pipeline orchestration: `adaptive_core.v3.pipeline`
 -   Cross-node summary (privacy-preserving):
     `adaptive_core.v3.node_summary`
@@ -162,5 +185,6 @@ The following are explicitly out of scope for ACv3:
 -   autonomous governance
 -   wallet UX decisions
 -   network consensus modifications
+-   Shield cryptographic verification or Shield key management
 
 ACv3 produces **advisory intelligence** only.
