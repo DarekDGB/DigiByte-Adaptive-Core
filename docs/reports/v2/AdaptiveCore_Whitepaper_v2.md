@@ -1,14 +1,15 @@
 # 🧬 DigiByte Adaptive Core — Whitepaper (v2)
 
 Author: **DarekDGB**  
-AI Engineering Assistant: **Angel**  
 License: MIT  
 
 ---
 
+> **Legacy status:** This historical v2 document is non-normative for Adaptive Core v3 and Shield v4. It does not define current authority or cryptographic verification. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. See the [v3 contract](../v3/CONTRACT.md).
+
 # 1. Introduction
 
-The DigiByte Adaptive Core is the **sixth and final layer** of the DigiByte Quantum Immune Shield — the system designed to bring DigiByte into the quantum era with an evolving, self-improving defensive architecture.
+The historical v2 vision presented the DigiByte Adaptive Core as the **sixth and final layer** of the DigiByte Quantum Immune Shield — a proposed evolving, self-improving defensive architecture.
 
 While the 5 main layers detect, confirm, defend, and protect wallets, the Adaptive Core adds something no blockchain has ever had:
 
@@ -188,7 +189,7 @@ This is the first blockchain immune system that:
 - strengthens over time  
 
 While other blockchains wait for “the next hard fork,”  
-DigiByte becomes an **active, self-evolving defender**.
+In this historical v2 vision, DigiByte becomes an **active, self-evolving defender**.
 
 ---
 
