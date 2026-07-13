@@ -77,10 +77,11 @@ A reviewer SHOULD confirm:
 
 ## 6. Relationship to External Systems
 
-Execution boundaries (e.g., Adamantine Wallet OS) may:
+Execution boundaries such as AdamantineOS may:
 
 - Consume proposal artifacts
 - Require human review receipts
 - Enforce strict validation before any decision is allowed
 
 Adaptive Core never pushes upgrades outward and never applies them.
+Proposal artifacts are not Shield signature evidence and cannot approve, override, downgrade, bypass, or rescue a Shield result. AdamantineOS remains the final policy and execution boundary.
