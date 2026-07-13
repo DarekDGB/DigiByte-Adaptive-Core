@@ -3,7 +3,7 @@
 **Version:** v3.0.0\
 **Status:** Contract-aligned documentation index
 
-This index reflects the shipped v3.0.0 implementation and its normative
+This index reflects the shipped v3 implementation and its normative
 contract surface.
 
 If documentation and code diverge, **code + CONTRACT.md wins**.
@@ -61,7 +61,7 @@ It never auto-applies upgrades.
 
 This documentation set corresponds to:
 
-**Adaptive Core v3.0.0**
+**Adaptive Core v3 contract documentation**
 
 Any structural or behavioral change that affects:
 
