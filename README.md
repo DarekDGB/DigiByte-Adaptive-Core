@@ -1,12 +1,12 @@
-## DigiByte Adaptive Core (v3.1.0)
+## DigiByte Adaptive Core (v3.0.0)
 
 ![CI](https://github.com/DarekDGB/DigiByte-Adaptive-Core/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![License](https://img.shields.io/github/license/DarekDGB/DigiByte-Adaptive-Core)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 
-**Adaptive Core v3.1.0** is the deterministic Upgrade Oracle of the
-DigiByte Quantum Shield.
+**Adaptive Core v3.0.0** is the deterministic Upgrade Oracle in the
+DigiByte Quantum Shield v4 ecosystem.
 
 It is a read-only, deterministic, fail-closed advisory system that
 observes shield signals, derives evidence and findings, and produces
@@ -24,6 +24,7 @@ structured governance artifacts for human review.
 -   Fail-closed (no silent defaults)
 -   Human-reviewed governance artifacts
 -   No authority over keys, transactions, or nodes
+-   No Shield signature verification or Shield trust registry
 -   Strict contract enforcement
 -   Aligned with Archangel Michael Guardrails
 
@@ -33,16 +34,16 @@ structured governance artifacts for human review.
 
 ``` mermaid
 flowchart TB
-  Sentinel["Sentinel AI v3"]
-  DQSN["DQSN v3"]
-  ADN["ADN v3"]
-  QWG["QWG v3"]
-  GW["Guardian Wallet v3"]
+  Sentinel["Sentinel AI telemetry"]
+  DQSN["DQSN telemetry"]
+  ADN["ADN telemetry"]
+  QWG["QWG telemetry"]
+  GW["Wallet Guardian telemetry"]
 
   AC["Adaptive Core v3 (Upgrade Oracle)"]
   Outbox["Outbox Artifact (upgrade_proposal_v3)"]
   HR["Human Review (Pull Request)"]
-  Apply["Manual Shield Upgrade (PR Merge)"]
+  Apply["Maintainer Change (PR Merge)"]
 
   Sentinel --> AC
   DQSN --> AC
@@ -55,13 +56,23 @@ flowchart TB
 
 ------------------------------------------------------------------------
 
+## 🛡️ Shield v4 Compatibility Boundary
+
+Adaptive Core accepts advisory observations and emits advisory artifacts. It does not parse or verify Shield signature bundles, possess Shield decision-evidence keys, or interpret cryptographic evidence as approval.
+
+The Shield verifier-required policy remains `classical-ed25519 + ml-dsa`. Optional `fn-dsa` evidence uses Falcon-1024 under `fips206-draft-falcon1024-v1`; it is draft-profile evidence, not final FIPS 206 proof. Adaptive Core cannot make FN-DSA required or use it to replace, rescue, override, or downgrade a required verification result.
+
+Q-ID identity keys and Shield decision-evidence keys remain separate. AdamantineOS independently verifies Shield evidence and remains the authoritative, fail-closed final policy and execution boundary.
+
+------------------------------------------------------------------------
+
 ## 📦 What Adaptive Core v3 Produces
 
 -   Canonicalized observations (strict schema)
 -   Deterministic evidence counters (hot-window model)
 -   Deterministic findings & drift indicators
 -   Human-readable upgrade reports (JSON + Markdown)
--   Integrity envelopes (hash + signature status)
+-   Integrity envelopes (`report_hash` plus local `classical_signature` and `pqc_signature` status metadata)
 -   Privacy-preserving cross-node summaries
 -   Structured `upgrade_proposal_v3` governance artifacts
 
@@ -115,6 +126,7 @@ This enforces:
 -   Execute transactions
 -   Modify wallet or node state
 -   Hold keys or secrets
+-   Verify Shield signatures or select Shield trust keys
 -   Auto-apply patches
 -   Guess missing data
 -   Perform black-box ML
@@ -132,8 +144,9 @@ Key documents include:
 
 -   CONTRACT.md --- normative behavior contract
 -   AUTHORITY_BOUNDARIES.md --- hard authority limits
+-   ADAMANTINEOS_INTEGRATION.md --- advisory exporter and Shield v4 compatibility boundary
 -   GUARDRAILS.md --- enforced guardrails registry
--   SECURITY.md --- security posture
+-   [`SECURITY.md`](SECURITY.md) --- repository security posture
 -   REPORT_FORMAT.md --- report structure
 -   PIPELINE_USAGE.md --- execution pipeline
 -   NODE_SUMMARY.md --- cross-node aggregation
@@ -168,6 +181,7 @@ Execution boundaries (e.g., AdamantineOS) may:
 3.  Enforce fail-closed decision boundaries.
 
 Adaptive Core never pushes changes outward.
+Its artifacts cannot approve, override, downgrade, bypass, or rescue a Shield result. AdamantineOS applies its own verifier-controlled policy and remains final.
 
 ------------------------------------------------------------------------
 
