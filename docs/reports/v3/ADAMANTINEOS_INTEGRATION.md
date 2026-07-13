@@ -3,7 +3,7 @@
 Author attribution: **DarekDGB**
 Repository: `DigiByte-Adaptive-Core`
 Status: Normative advisory exporter and Shield v4 compatibility documentation
-Adaptive Core version boundary: `v3.0.0` remains unchanged
+Adaptive Core v3 advisory interface boundary remains unchanged
 AdamantineOS receiver boundary: `DigiByte-AdamantineOS` verify-only Shield boundary
 
 ---
@@ -176,7 +176,7 @@ Expected result:
 0 skipped, failures, or errors.
 1,505 of 1,505 statements covered.
 Required statement coverage remains 100%.
-Adaptive Core remains v3.0.0.
+Adaptive Core v3 advisory interface remains unchanged.
 No Adaptive Core tag is created.
 No Shield cryptographic verification is added.
 ```
