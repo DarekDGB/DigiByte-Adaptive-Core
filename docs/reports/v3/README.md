@@ -1,7 +1,7 @@
 # Adaptive Core v3 --- Upgrade Oracle (Overview)
 
-Adaptive Core v3 is the **Upgrade Oracle** for the DigiByte Quantum
-Shield.
+Adaptive Core v3 is the **Upgrade Oracle** in the DigiByte Quantum
+Shield v4 ecosystem.
 
 It is intentionally designed as:
 
@@ -24,8 +24,8 @@ produces:
 -   Deterministic evidence counters (hot-window)
 -   Deterministic findings
 -   Deterministic reports (**JSON + Markdown**)
--   A deterministic integrity envelope (**context_hash + signature
-    status**)
+-   A deterministic integrity envelope (`report_hash` plus local
+    `classical_signature` and `pqc_signature` status metadata)
 
 ------------------------------------------------------------------------
 
@@ -36,6 +36,7 @@ v3 does not:
 -   Execute transactions
 -   Change wallet or node state
 -   Hold cryptographic keys
+-   Parse or verify Shield signature bundles
 -   Auto-apply patches or upgrades
 -   Silently accept malformed inputs
 -   Infer or guess missing data
@@ -57,8 +58,10 @@ All v3 implementation code lives under `src/adaptive_core/v3/`:
 -   Guardrails registry: `adaptive_core.v3.guardrails.registry`
 -   Reason IDs: `adaptive_core.v3.reason_ids`
 -   Report generation: `adaptive_core.v3.report_builder`
--   Integrity envelope: `adaptive_core.v3.envelope`,
-    `adaptive_core.v3.context_hash`
+-   Integrity envelope: `adaptive_core.v3.envelope`
+-   Event context hashing: `adaptive_core.v3.context_hash`
+-   AdamantineOS advisory exporter:
+    `adaptive_core.v3.integration.adamantine`
 -   Pipeline orchestration: `adaptive_core.v3.pipeline`
 -   Cross-node summary (privacy-preserving):
     `adaptive_core.v3.node_summary`
@@ -92,3 +95,13 @@ Adaptive Core v3 enforces a **machine-validated guardrails registry**.
 -   Guardrails define **limits**, not actions.
 
 See: [GUARDRAILS.md](GUARDRAILS.md)
+
+------------------------------------------------------------------------
+
+## Shield v4 compatibility boundary
+
+The local `classical_signature` and `pqc_signature` values are caller-supplied report status metadata with the exact vocabulary `ABSENT`, `PRESENT`, or `UNSUPPORTED`. They do not contain signature bytes and do not prove Shield verification.
+
+Shield evidence requires `classical-ed25519 + ml-dsa`. Optional `fn-dsa` evidence uses Falcon-1024 under `fips206-draft-falcon1024-v1`; it cannot replace or rescue a failed required path and is not final FIPS 206 proof. Adaptive Core does not enforce this policy or select Shield keys.
+
+Q-ID identity keys remain separate from Shield decision-evidence keys. Adaptive outputs cannot approve, override, downgrade, bypass, or rescue Shield evidence. AdamantineOS remains the verifier-controlled, fail-closed final policy and execution boundary.
