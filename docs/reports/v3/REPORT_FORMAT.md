@@ -12,35 +12,42 @@ must be versioned.
 
 ------------------------------------------------------------------------
 
-## 1. Report Artifacts
+## 1. Pipeline Outputs
 
-Adaptive Core v3 produces two synchronized artifacts:
+Adaptive Core v3 returns four related values:
 
-1.  Canonical JSON report (machine-readable, hashing source)
-2.  Markdown report (human-readable rendering of same content)
+1.  `UpgradeReportV3` report object
+2.  canonical JSON report (machine-readable hashing source)
+3.  deterministic Markdown rendering
+4.  separate `ReportEnvelopeV3` integrity envelope
 
-Both must represent identical semantic content.
+The JSON and Markdown are derived from the same report object. The envelope hashes the exact canonical JSON string.
 
 ------------------------------------------------------------------------
 
 ## 2. Canonical JSON Structure (High-Level)
 
-The canonical report JSON includes:
+The canonical JSON is the stable serialization of `UpgradeReportV3` and contains exactly these top-level fields:
 
--   version --- report contract version (v3)
--   observations_summary --- deterministic summary of processed inputs
--   evidence_window --- bounded counters and metrics
--   findings --- array of structured findings
--   confidence --- deterministic confidence model output
--   guardrails --- referenced guardrail IDs
--   reason_ids --- referenced reason identifiers
--   metadata
-    -   pipeline_version
--   integrity
-    -   context_hash (computed over canonical JSON)
-    -   signature_status (present/absent/invalid)
+```text
+report_id
+report_type
+target_layers
+evidence
+findings
+guardrails
+guardrail_titles
+confidence
+confidence_breakdown
+capabilities
+drift_dot
+recommended_actions
+required_tests
+exit_criteria
+forbidden_actions
+```
 
-Field ordering must be stable after canonicalization.
+Serialization uses sorted keys and compact separators. The integrity envelope is separate and is not inserted into this report JSON.
 
 ------------------------------------------------------------------------
 
@@ -48,13 +55,13 @@ Field ordering must be stable after canonicalization.
 
 Each finding MUST include:
 
--   reason_id (stable registry reference)
+-   finding_id
+-   title
 -   severity
--   description
--   evidence_refs
--   guardrail_refs
+-   evidence
+-   guardrails
 
-Unknown reason IDs or guardrail IDs MUST fail-closed.
+Referenced guardrail IDs are validated against the registry and unknown IDs fail closed. Upstream reason IDs, when present, remain evidence data rather than a separate required finding field.
 
 ------------------------------------------------------------------------
 
@@ -62,10 +69,11 @@ Unknown reason IDs or guardrail IDs MUST fail-closed.
 
 The Markdown report:
 
--   Mirrors the canonical JSON content
+-   Is derived deterministically from the same report object
+-   Presents a stable human-readable subset and summary
 -   Preserves stable section ordering
 -   Avoids non-deterministic formatting artifacts
--   Must not introduce new semantic data not present in JSON
+-   Must not become the hashing source or introduce execution authority
 
 Markdown is a presentation layer only.
 
@@ -73,18 +81,34 @@ Markdown is a presentation layer only.
 
 ## 5. Integrity Envelope
 
-The integrity envelope includes:
+The in-memory `ReportEnvelopeV3` object includes:
 
--   context_hash
-    -   Deterministically computed from canonical JSON
--   signature_status
-    -   Explicit status only (no implied authority)
+-   `report_hash`
+    -   SHA-256 of the exact canonical report JSON string
+-   `canonical_json`
+    -   the exact string that was hashed and separately returned by the pipeline
+-   `classical_signature`
+    -   local status metadata: `ABSENT`, `PRESENT`, or `UNSUPPORTED`
+-   `pqc_signature`
+    -   local status metadata: `ABSENT`, `PRESENT`, or `UNSUPPORTED`
 
 Hash input MUST be canonicalized JSON only.
 
+`ReportEnvelopeV3.to_dict()` emits only `report_hash`, `classical_signature`, and `pqc_signature`. It omits `canonical_json` because the canonical string is already a separate pipeline return value; the string remains observable on the envelope object.
+
+The status values are caller-supplied report metadata. The envelope contains no signature bytes and performs no cryptographic verification. `PRESENT` does not prove a valid Shield signature and grants no approval or execution authority.
+
 ------------------------------------------------------------------------
 
-## 6. Proposals Integration
+## 6. Shield v4 Boundary
+
+Adaptive Core does not parse Shield signature bundles, select Shield keys, or enforce Shield cryptographic policy. Shield evidence requires `classical-ed25519 + ml-dsa`; optional `fn-dsa` evidence under `fips206-draft-falcon1024-v1` cannot replace or rescue a failed required path and is not final FIPS 206 proof.
+
+Q-ID identity keys and Shield decision-evidence keys remain separate. Adaptive outputs cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the authoritative, fail-closed final policy and execution boundary.
+
+------------------------------------------------------------------------
+
+## 7. Proposals Integration
 
 If a report results in a proposed upgrade:
 
@@ -100,7 +124,7 @@ Adaptive Core never auto-applies report outcomes.
 
 ------------------------------------------------------------------------
 
-## 7. Version Discipline
+## 8. Version Discipline
 
 Any change affecting:
 
