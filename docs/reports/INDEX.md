@@ -78,7 +78,7 @@ Historical v2 reports are indexed by [`v2/README.md`](v2/README.md). They are no
 
 This documentation set corresponds to:
 
-Adaptive Core v3.0.0
+Adaptive Core v3 contract documentation
 
 Any change affecting:
 
