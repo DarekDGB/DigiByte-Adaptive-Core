@@ -1,5 +1,9 @@
 # DigiByte Quantum Shield — Full-Scale Attack Simulation (v2)
 
+Author attribution: **DarekDGB**
+
+> **Legacy status:** This historical simulation is non-normative for Adaptive Core v3 and Shield v4. It does not prove current automated defence, execution authority, or cryptographic verification. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. See the [v3 contract](../v3/CONTRACT.md).
+
 ## Overview
 Three coordinated attack scenarios were executed against the fully upgraded DigiByte Quantum Shield (Sentinel AI v2 + Adaptive Core v2). This simulation validates closed-loop intelligence, reinforcement learning, threat memory, patterns, correlations, and heartbeat readiness.
 
@@ -124,5 +128,4 @@ The upgraded system is now:
 - **Resistant to poisoning**  
 - **Stronger after each attack**  
 
-This completes the first real demonstration of a **closed-loop autonomous defense system** for DigiByte.
-
+This historical simulation exercised closed-loop concepts only. It does not establish a current autonomous defence system and grants no execution, signing, broadcasting, consensus, or Shield-verification authority.
