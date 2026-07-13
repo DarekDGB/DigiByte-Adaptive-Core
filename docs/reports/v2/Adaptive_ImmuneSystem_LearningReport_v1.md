@@ -1,10 +1,12 @@
 # DigiByte Quantum Adaptive Core — Immune System Learning Report v1
 
-**Author:** DarekDGB & Angel  
-**Scope:** Virtual multi-cycle attack & learning simulation across all 5 shield layers + Adaptive Core.  
-**Location:** Digibyte-Quantum-Adaptive-Core/docs/Adaptive_ImmuneSystem_LearningReport_v1.md  
+**Author:** DarekDGB\
+**Scope:** Virtual multi-cycle attack & learning simulation across all 5 shield layers + Adaptive Core.\
+**Location:** DigiByte-Adaptive-Core/docs/reports/v2/Adaptive_ImmuneSystem_LearningReport_v1.md
 
 ---
+
+> **Legacy status:** This historical simulation is non-normative for Adaptive Core v3 and Shield v4. It does not prove current automated defence, execution authority, or cryptographic verification. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. See the [v3 contract](../v3/CONTRACT.md).
 
 ## 1. Overview
 
@@ -368,5 +370,5 @@ Planned directions for **Adaptive Core v3**:
 
 **End of Report – Adaptive_ImmuneSystem_LearningReport_v1.md**
 
-Made with ✨ by DarekDGB & Angel  
+Prepared by DarekDGB\
 DigiByte Quantum Shield – learning, healing, protecting.
