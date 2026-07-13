@@ -1,31 +1,26 @@
-# Adaptive Core v2 — Legacy Learning Engine (Overview)
+# Adaptive Core v2 — Legacy Documentation Index
 
-Adaptive Core v2 is the historical “learning engine” implementation that existed before the v3 Upgrade Oracle work.
+Author attribution: **DarekDGB**
 
-It includes v2 concepts such as:
+Adaptive Core v2 is the historical learning-engine implementation that existed before the v3 Upgrade Oracle.
 
-- immune report generation
-- threat packet ingestion
-- heuristic learning / reinforcement-style update logic
-- memory stores and sinks
+> **Legacy status:** Every document in this directory is retained for historical context and is non-normative for Adaptive Core v3 and Shield v4. Historical descriptions of learning, actions, or automated defence do not grant current authority. Adaptive Core remains advisory-only, does not verify Shield signatures, and cannot approve, override, downgrade, bypass, or rescue Shield outcomes. AdamantineOS remains the final policy and execution boundary. Current rules are defined by the [v3 contract](../v3/CONTRACT.md) and [authority boundaries](../v3/AUTHORITY_BOUNDARIES.md).
 
-## Important: v2 vs v3
+## Historical v2 concepts
 
-- v2 is **legacy** and may remain in the repository for compatibility and historical context.
-- v3 is the **current** architecture direction for the shield’s upgrade oracle.
+- immune report generation;
+- threat packet ingestion;
+- heuristic learning and reinforcement-style update logic;
+- memory stores and sinks.
 
-v3 is intentionally stricter and more protocol-like:
+## Actual v2 document inventory
 
-- deterministic outputs
-- strict canonicalization
-- explicit reason IDs
-- guardrails registry
-- no execution authority
+- `AdaptiveCore_CodeBlueprint_v2.md`
+- `AdaptiveCore_DeveloperGuide_v2.md`
+- `AdaptiveCore_TechSpec_v2.md`
+- `AdaptiveCore_Whitepaper_v2.md`
+- `Adaptive_ImmuneSystem_LearningReport_v1.md`
+- `Full_Scale_Attack_Simulation_AdaptiveCore_v2.md`
+- `Full_Scale_Attack_Simulation_v2.md`
 
-## v2 Docs
-
-Legacy report docs are here:
-
-- `reports/immune-report-schema.md`
-- `reports/qri-scoring.md`
-- `reports/reinforcement-learning-rules.md`
+The v3 implementation is intentionally stricter: deterministic outputs, strict canonicalization, explicit reason IDs, fail-closed guardrails, and no execution authority.
