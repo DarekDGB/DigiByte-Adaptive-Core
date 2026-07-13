@@ -1,11 +1,11 @@
-## DigiByte Adaptive Core (v3.0.0)
+## DigiByte Adaptive Core (v3.1.0)
 
 ![CI](https://github.com/DarekDGB/DigiByte-Adaptive-Core/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![License](https://img.shields.io/github/license/DarekDGB/DigiByte-Adaptive-Core)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 
-**Adaptive Core v3.0.0** is the deterministic Upgrade Oracle in the
+**Adaptive Core v3.1.0** is the deterministic Upgrade Oracle in the
 DigiByte Quantum Shield v4 ecosystem.
 
 It is a read-only, deterministic, fail-closed advisory system that
