@@ -15,8 +15,11 @@ If documentation and code diverge, **code + CONTRACT.md wins**.
 -   `README.md` --- v3 overview and high-level guarantees
 -   `CONTRACT.md` --- normative behavior contract (authoritative)
 -   `AUTHORITY_BOUNDARIES.md` --- hard authority limits
+-   `ADAMANTINEOS_INTEGRATION.md` --- advisory exporter and Shield v4 compatibility boundary
+-   `ARCHITECTURE_OVERVIEW.md` --- current Adaptive Core topology
+-   `ADAPTIVE_CORE_V3_DIAGRAMS.md` --- architecture diagrams
 -   `GUARDRAILS.md` --- enforced guardrails registry
--   `SECURITY.md` --- security posture & disclosure process
+-   [`../../../SECURITY.md`](../../../SECURITY.md) --- repository security posture and disclosure process
 
 ------------------------------------------------------------------------
 
