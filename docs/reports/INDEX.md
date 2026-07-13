@@ -22,8 +22,11 @@ Core documents:
 -   README.md --- v3 overview
 -   CONTRACT.md --- normative behavior contract (authoritative)
 -   AUTHORITY_BOUNDARIES.md --- hard authority limits
+-   ADAMANTINEOS_INTEGRATION.md --- advisory exporter and Shield v4 compatibility boundary
+-   ARCHITECTURE_OVERVIEW.md --- current Adaptive Core topology
+-   ADAPTIVE_CORE_V3_DIAGRAMS.md --- architecture diagrams
 -   GUARDRAILS.md --- enforced guardrails registry
--   SECURITY.md --- security posture & disclosure policy
+-   [`../../SECURITY.md`](../../SECURITY.md) --- repository security posture and disclosure policy
 
 Deterministic Logic:
 
@@ -62,6 +65,12 @@ Adaptive Core acts as:
 -   Reporter
 
 It never executes changes.
+
+------------------------------------------------------------------------
+
+# Legacy v2 Documentation
+
+Historical v2 reports are indexed by [`v2/README.md`](v2/README.md). They are non-normative for Adaptive Core v3 and Shield v4.
 
 ------------------------------------------------------------------------
 
