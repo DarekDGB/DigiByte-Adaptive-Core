@@ -21,12 +21,19 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def test_v49c_version_indexes_and_repository_names_match_current_files() -> None:
+def test_v49c_release_contract_versions_indexes_and_repository_names_match_current_files() -> None:
     project = tomllib.loads(_read(ROOT / "pyproject.toml"))["project"]
     readme = _read(ROOT / "README.md")
     assert project["version"] == "3.0.0"
-    assert "v3.0.0" in readme
-    assert "v3.1.0" not in readme
+    assert readme.startswith("## DigiByte Adaptive Core (v3.1.0)\n")
+    assert "**Adaptive Core v3.1.0**" in readme
+
+    reports_index = _read(DOCS / "INDEX.md")
+    v3_index = _read(V3 / "INDEX.md")
+    integration = _read(V3 / "ADAMANTINEOS_INTEGRATION.md")
+    assert "**Version:** v3.0.0" in reports_index
+    assert "**Version:** v3.0.0" in v3_index
+    assert "Adaptive Core v3 advisory interface boundary remains unchanged" in integration
 
     expected_v2 = {path.name for path in V2.glob("*.md") if path.name != "README.md"}
     listed_v2 = set(re.findall(r"^- `([^`]+\.md)`$", _read(V2 / "README.md"), flags=re.MULTILINE))
@@ -40,7 +47,7 @@ def test_v49c_version_indexes_and_repository_names_match_current_files() -> None
     ):
         assert target.is_file()
 
-    indexes = _read(DOCS / "INDEX.md") + _read(V3 / "INDEX.md")
+    indexes = reports_index + v3_index
     assert "ADAMANTINEOS_INTEGRATION.md" in indexes
     assert "ADAPTIVE_CORE_V3_DIAGRAMS.md" in indexes
     assert "ARCHITECTURE_OVERVIEW.md" in indexes
