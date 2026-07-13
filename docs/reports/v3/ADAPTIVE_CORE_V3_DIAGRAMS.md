@@ -5,7 +5,7 @@ Authoritative behavioral rules remain in:
 - AUTHORITY_BOUNDARIES.md
 - CONTRACT.md
 - REASON_IDS.md
-- SECURITY.md
+- [SECURITY.md](../../../SECURITY.md)
 
 ---
 
@@ -13,12 +13,12 @@ Authoritative behavioral rules remain in:
 
 ```mermaid
 flowchart TB
-  subgraph Shield_Layers["DigiByte Quantum Shield Layers (v3)"]
-    S["Sentinel AI v3\n(perimeter sensor)"]
-    N["DQSN v3\n(network aggregation)"]
-    A["ADN v3\n(active defence)"]
-    Q["QWG v3\n(tx guard)"]
-    G["Guardian Wallet v3\n(user-side policy)"]
+  subgraph Shield_Layers["Shield v4 Ecosystem Telemetry Sources"]
+    S["Sentinel AI\n(advisory telemetry)"]
+    N["DQSN\n(advisory telemetry)"]
+    A["ADN\n(advisory telemetry)"]
+    Q["QWG\n(advisory telemetry)"]
+    G["Wallet Guardian\n(advisory telemetry)"]
   end
 
   subgraph AC3["Adaptive Core v3 — Upgrade Oracle (read-only)"]
@@ -28,10 +28,11 @@ flowchart TB
     D["Drift Radar\n(explicit contracts only)"]
     R["Report Builder\n(JSON + MD)"]
     V["Guardrails Registry\n(AMG ids, fail-closed)"]
-    H["Envelope\n(hash + signature status)"]
+    H["Envelope\n(report_hash + local status metadata)"]
+    X["AdamantineOS Advisory Exporter"]
   end
 
-  Shield_Layers -->|v3-shaped observations| C
+  Shield_Layers -->|advisory observations| C
   C --> E
   E --> F
   F --> V
@@ -39,8 +40,10 @@ flowchart TB
   V --> R
   F --> R
   R --> H
+  F -.->|caller-selected advisory summary| X
 
   H -->|advisory outputs only| Humans["Human Review\n(maintainers / auditors)"]
+  X -->|advisory evidence only| AOS["AdamantineOS\nfinal policy boundary"]
   Humans -->|manual upgrades + tests| Shield_Layers
 ```
 
@@ -69,7 +72,7 @@ sequenceDiagram
   F->>V: union guardrail ids
   V-->>R: titles + validation (unknown => fail)
   F->>R: evidence findings
-  R->>H: stable hash + signature status
+  R->>H: report_hash + local classical/PQC status metadata
   H-->>L: report + envelope
 ```
 
@@ -135,5 +138,7 @@ flowchart TB
 ## Notes
 
 - Diagrams intentionally avoid implementation detail beyond module boundaries.
+- Adaptive Core does not parse or verify Shield signature bundles and cannot approve, override, downgrade, bypass, or rescue Shield outcomes.
+- AdamantineOS remains the authoritative, fail-closed final policy and execution boundary.
 - Keep aligned with adaptive_core/v3/* code paths.
 - If diagrams and code disagree, **code + CONTRACT win**.
