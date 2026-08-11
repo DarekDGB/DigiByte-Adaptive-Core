@@ -60,7 +60,7 @@ class AdaptiveEngine:
         self.threat_memory.load()
 
         # Last update metadata (UTC ISO strings, or None if never updated).
-        # Telemetry only â not used for decisions.
+        # Telemetry only - not used for decisions.
         self.last_threat_received: Optional[str] = None
         self.last_learning_update: Optional[str] = None
 
@@ -341,8 +341,8 @@ class AdaptiveEngine:
         Detect simple time-based trends in threat activity.
 
         bucket:
-            - "hour" â group by YYYY-MM-DD HH:00
-            - "day"  â group by YYYY-MM-DD
+            - "hour" -> group by YYYY-MM-DD HH:00
+            - "day"  -> group by YYYY-MM-DD
 
         Patch C rule:
           - No silent fallbacks. Invalid timestamps are counted explicitly.
@@ -457,7 +457,7 @@ class AdaptiveEngine:
         deep = deep_engine.analyze(min_severity=min_severity)
 
         lines: List[str] = []
-        lines.append("=== DigiByte Quantum Adaptive Core â Immune Report ===")
+        lines.append("=== DigiByte Quantum Adaptive Core - Immune Report ===")
         lines.append(f"Min severity filter: {min_severity}")
         lines.append("")
 
@@ -515,7 +515,7 @@ class AdaptiveEngine:
             for pair in top_pairs:
                 a = pair["from_type"].replace("_", " ").title()
                 b = pair["to_type"].replace("_", " ").title()
-                lines.append(f"    - {a} â {b}: {pair['count']} times")
+                lines.append(f"    - {a} -> {b}: {pair['count']} times")
 
         if not correlations["layer_threat_combos"]:
             lines.append("  No strong (layer, threat) combinations.")
@@ -583,7 +583,7 @@ class AdaptiveEngine:
     def get_last_update_metadata(self) -> Dict[str, Optional[str]]:
         """
         Return timestamps (UTC ISO strings) of last threat and last learning.
-        Telemetry only â not used for decisions.
+        Telemetry only - not used for decisions.
         """
         return {
             "last_threat_received": self.last_threat_received,
@@ -663,7 +663,7 @@ class AdaptiveEngine:
             tag = str(fb).upper()
 
         if tag == "TRUE_POSITIVE":
-            # The reporting layer was correct â trust it a bit more,
+            # The reporting layer was correct -> trust it a bit more,
             # and make the system slightly stricter.
             self.state.layer_weights[layer] += 0.05
             self.state.global_threshold += 0.01
@@ -671,7 +671,7 @@ class AdaptiveEngine:
             adj.threshold_shift += 0.01
 
         elif tag == "FALSE_POSITIVE":
-            # The reporting layer overreacted â trust it a bit less,
+            # The reporting layer overreacted -> trust it a bit less,
             # and relax the global threshold slightly.
             self.state.layer_weights[layer] -= 0.05
             self.state.global_threshold -= 0.01
@@ -679,14 +679,14 @@ class AdaptiveEngine:
             adj.threshold_shift -= 0.01
 
         elif tag == "MISSED_ATTACK":
-            # A real attack slipped through â *all* layers need to become
+            # A real attack slipped through -> *all* layers need to become
             # more sensitive, and the global threshold tightens more.
             for l in self.state.layer_weights:
                 self.state.layer_weights[l] += 0.02
                 per_layer.setdefault(l, LayerAdjustment()).weight_delta += 0.02
             self.state.global_threshold += 0.02
 
-        # Any other / unknown tag â no learning
+        # Any other / unknown tag -> no learning
 
     def _clamp_state(self) -> None:
         """
