@@ -29,6 +29,14 @@ KNOWN_MOJIBAKE_MARKERS = (
 )
 
 
+def _is_generated_path(relative_path: Path) -> bool:
+    return (
+        relative_path.name == ".coverage"
+        or any(part in IGNORED_PARTS for part in relative_path.parts)
+        or any(part.endswith(".egg-info") for part in relative_path.parts[:-1])
+    )
+
+
 def _validate_text(relative_path: Path, payload: bytes) -> None:
     try:
         text = payload.decode("utf-8", errors="strict")
@@ -80,14 +88,51 @@ def test_v49m_repository_text_is_strict_utf8_and_mojibake_free() -> None:
         path
         for path in sorted(ROOT.rglob("*"))
         if path.is_file()
-        and not any(part in IGNORED_PARTS for part in path.relative_to(ROOT).parts)
-        and path.name != ".coverage"
+        and not _is_generated_path(path.relative_to(ROOT))
     )
 
     assert ENGINE in text_files
 
     for path in text_files:
         _validate_text(path.relative_to(ROOT), path.read_bytes())
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "expected_ignored"),
+    (
+        pytest.param(
+            Path("src/package.egg-info/SOURCES.txt"),
+            True,
+            id="editable-install-egg-info",
+        ),
+        pytest.param(
+            Path(".pytest_cache/v/cache/nodeids"),
+            True,
+            id="pytest-cache",
+        ),
+        pytest.param(Path(".coverage"), True, id="coverage-data"),
+        pytest.param(
+            Path("src/package.egg-info-extra/SOURCES.txt"),
+            False,
+            id="egg-info-lookalike-directory",
+        ),
+        pytest.param(
+            Path("docs/report.egg-info"),
+            False,
+            id="egg-info-suffix-file",
+        ),
+        pytest.param(
+            Path("src/adaptive_core/engine.py"),
+            False,
+            id="governed-source",
+        ),
+    ),
+)
+def test_v49m_repository_text_inventory_excludes_only_generated_paths(
+    relative_path: Path,
+    expected_ignored: bool,
+) -> None:
+    assert _is_generated_path(relative_path) is expected_ignored
 
 
 @pytest.mark.parametrize("payload", MALFORMED_TEXT_PAYLOADS)
