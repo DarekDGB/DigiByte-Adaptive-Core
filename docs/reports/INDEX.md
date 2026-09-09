@@ -6,6 +6,12 @@
 This index covers the Adaptive Core reporting and governance
 documentation.
 
+The v3.0.0 label above identifies the unchanged report-document contract
+baseline, not the current package metadata. G2 aligns the package to 3.1.0;
+the existing v3.1.0 tag remains a separate historical snapshot. See
+[release status and version map](../RELEASE_STATUS_V4_10_G2.md) and
+[changelog](../../CHANGELOG.md) for current evidence and post-commit gates.
+
 If documentation diverges from implementation, **code + CONTRACT.md
 wins**.
 
