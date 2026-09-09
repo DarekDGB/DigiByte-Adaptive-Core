@@ -12,7 +12,13 @@ It is intentionally designed as:
 -   **No hidden authority**
 
 > Adaptive Core v3 observes, summarizes, and reports.\
-> It never executes, never modifies state, and never self-upgrades.
+> It never executes transactions, modifies wallet or node state, or self-upgrades.
+
+Local evidence counters and explicit artifact output are supported. Read-only
+limits external authority; it does not mean the implementation has no local
+state. Package metadata is aligned to 3.1.0 in G2, while v3 contracts and the
+`adaptive-core/3.0.0` exporter default remain unchanged. See
+[release status](../../RELEASE_STATUS_V4_10_G2.md) for the complete version map.
 
 ------------------------------------------------------------------------
 
