@@ -24,7 +24,7 @@ def _read(path: Path) -> str:
 def test_v49c_release_contract_versions_indexes_and_repository_names_match_current_files() -> None:
     project = tomllib.loads(_read(ROOT / "pyproject.toml"))["project"]
     readme = _read(ROOT / "README.md")
-    assert project["version"] == "3.0.0"
+    assert project["version"] == "3.1.0"
     assert readme.startswith("## DigiByte Adaptive Core (v3.1.0)\n")
     assert "**Adaptive Core v3.1.0**" in readme
 
