@@ -6,6 +6,13 @@
 This index reflects the shipped v3 implementation and its normative
 contract surface.
 
+The v3.0.0 label above identifies the unchanged report-document contract
+baseline. Package metadata is aligned to 3.1.0 in G2 without changing report
+or advisory evidence bytes. The existing v3.1.0 tag is historical, not a label
+for every later working-tree commit. See
+[release status](../../RELEASE_STATUS_V4_10_G2.md) and
+[changelog](../../../CHANGELOG.md).
+
 If documentation and code diverge, **code + CONTRACT.md wins**.
 
 ------------------------------------------------------------------------
