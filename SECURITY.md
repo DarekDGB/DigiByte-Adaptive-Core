@@ -1,6 +1,6 @@
 # Adaptive Core v3 --- Security Policy
 
-**Version:** v3.0.0\
+**Package baseline:** v3.1.0\
 **Status:** Deterministic, fail-closed advisory system
 
 Adaptive Core v3 is a read-only, deterministic advisory engine. It does
@@ -11,7 +11,7 @@ Security posture is defined by:
 -   Deterministic execution
 -   Fail-closed validation
 -   Strict authority boundaries
--   100% test coverage (CI-enforced)
+-   100% statement coverage (CI-enforced)
 -   Human-reviewed governance (PR-only proposals)
 
 ------------------------------------------------------------------------
@@ -27,7 +27,7 @@ Please include:
 
 -   Description of the issue
 -   Steps to reproduce
--   Affected version (e.g., v3.0.0)
+-   Affected package version and exact commit
 -   Proof-of-concept (if applicable)
 -   Expected vs actual behavior
 
@@ -53,6 +53,18 @@ It does NOT:
 -   Modify wallet or node state
 -   Auto-apply upgrades
 -   Provide hidden authority
+-   Verify Shield signatures or select Shield trust keys
+
+Read-only is an external authority limit, not a claim of zero local state.
+The implementation supports local evidence counters and explicit artifact
+output. Those outputs cannot approve, override, downgrade, bypass, or rescue
+Shield or AdamantineOS policy. AdamantineOS remains the authoritative,
+fail-closed final policy and execution boundary.
+
+Report hashes provide deterministic integrity checks. Caller-supplied
+`classical_signature` and `pqc_signature` labels (`ABSENT`, `PRESENT`,
+`UNSUPPORTED`) are not signature bytes or verified Shield proof. Adaptive Core
+has no OQS workflow and makes no live-OQS or final FIPS 206 claim.
 
 ------------------------------------------------------------------------
 
@@ -61,12 +73,15 @@ It does NOT:
 Security relies on:
 
 -   No randomness
--   No time-based logic
--   No environment-dependent branching
+-   No implicit wall-clock input in deterministic v3 report decisions
+-   Explicit time inputs for advisory freshness validation when supplied
 -   Stable canonical JSON hashing
 -   Regression-locked contract behavior
 
 Any nondeterministic behavior is treated as a defect.
+
+This is a tested contract, not a production certification or a claim that
+every environmental condition and optional persistence path has been proven.
 
 ------------------------------------------------------------------------
 
@@ -121,7 +136,12 @@ We aim to:
 
 ## 7. Version Discipline
 
-This security policy corresponds to v3.0.0.
+This policy covers the v3 advisory implementation under package baseline
+v3.1.0. G2 aligns package metadata to the existing tag and public baseline;
+it does not declare a new release. The v3.0.0 report-document baseline and
+the exporter's `adaptive-core/3.0.0` default remain frozen compatibility data.
+The default is caller-overridable metadata, not verified source identity.
+See [release status](docs/RELEASE_STATUS_V4_10_G2.md) for the exact version map.
 
 Changes to:
 
