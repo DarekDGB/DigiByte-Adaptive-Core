@@ -70,6 +70,13 @@ external_source_id
 
 When either optional field is absent, the normalized output contains that field with `null`. This is existing V1 behavior and is not silently reinterpreted as proof of source identity.
 
+G2 package metadata is `3.1.0`; the builder's `oracle_version` default remains
+`adaptive-core/3.0.0` to preserve the frozen shared evidence vector. This
+caller-overridable source metadata is not an installed-package-version query
+or an authenticated producer identity. `external_source_id` remains
+`adaptive-core-v3-adamantine-export`. Changing package metadata does not
+rewrite either default, the interface version, or emitted evidence bytes.
+
 Every `signals[]` object has exactly these required fields:
 
 ```text
@@ -166,13 +173,15 @@ This provides a two-sided deterministic proof vector without adding final author
 ## 7. Verification
 
 ```text
-PYTHONPATH=src pytest -q
+python -m pip install -e ".[dev]"
+python -c "from adaptive_core.v3.proposals import validate_inbox; validate_inbox()"
+python -m pytest
 ```
 
-Expected result:
+G2 candidate result on CPython 3.11.15:
 
 ```text
-260 passed.
+289 passed.
 0 skipped, failures, or errors.
 1,505 of 1,505 statements covered.
 Required statement coverage remains 100%.
@@ -180,3 +189,10 @@ Adaptive Core v3 advisory interface remains unchanged.
 No Adaptive Core tag is created.
 No Shield cryptographic verification is added.
 ```
+
+The earlier 260-test result belonged to the V4.9-C documentation checkpoint;
+the authenticated pre-G2 source has 283 tests. Neither is the current G2
+candidate count. Branch coverage is not configured or claimed here.
+The single standard workflow and a fresh ZIP must verify the final G2 commit.
+See [release status](../../RELEASE_STATUS_V4_10_G2.md) for source identity,
+package/report/exporter version separation, and remaining gates.
